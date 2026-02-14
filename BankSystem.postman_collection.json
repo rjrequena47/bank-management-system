@@ -1,0 +1,45 @@
+{
+    "info": {
+        "_postman_id": "a1b2c3d4-e5f6-4a7b-8c9d-0123456789ab",
+        "name": "BankSystem API",
+        "description": "Colección para el Sistema de Gestión Bancaria",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Auth",
+            "item": [
+                {
+                    "name": "Register Customer",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"dni\": \"12345678A\",\n    \"firstName\": \"Carlos\",\n    \"lastName\": \"García López\",\n    \"email\": \"carlos.garcia@email.com\",\n    \"password\": \"SecurePass123!\",\n    \"phone\": \"+34612345678\",\n    \"address\": \"Calle Mayor 123, Madrid\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8081/api/auth/register",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "8081",
+                            "path": [
+                                "api",
+                                "auth",
+                                "register"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ]
+}
