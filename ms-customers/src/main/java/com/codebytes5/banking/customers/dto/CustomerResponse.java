@@ -16,8 +16,12 @@ import java.util.UUID;
 public class CustomerResponse {
     private UUID id;
     private String dni;
+    private String firstName;
+    private String lastName;
     private String fullName;
     private String email;
+    private String phone;
+    private String address;
     private CustomerStatus status;
     private Instant createdAt;
 }

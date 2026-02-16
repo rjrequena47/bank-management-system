@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 public class CustomerRegistrationRequest {
 
     @NotBlank(message = "DNI is required")
-    @Pattern(regexp = "^[0-9]{8}[A-Z]$|UK[0-9]{6}[A-Z]$|...", message = "Invalid DNI format") // Simplified for now
+    @Pattern(regexp = "^[0-9]{8}[A-Z]$")
     private String dni;
 
     @NotBlank(message = "First name is required")

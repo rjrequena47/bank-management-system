@@ -16,7 +16,7 @@ Actualmente, el proyecto se encuentra en su fase inicial de desarrollo.
 - [x] **HU-01 - Registro de Cliente**
 - [x] **HU-02 - Autenticación (Login)**
 - [x] **HU-03 - Perfil de Cliente**
-- [ ] **HU-04 – Validar existencia y estado de cliente (interno)**
+- [x] **HU-04 – Validar existencia y estado de cliente (interno)**
 - [ ] **HU-05 – Crear cuenta bancaria**
 - [ ] **HU-06 – Listar cuentas del cliente**
 - [ ] **HU-07 – Consultar detalle de una cuenta**

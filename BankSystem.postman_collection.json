@@ -49,6 +49,9 @@
                                     "var jsonData = pm.response.json();",
                                     "if (jsonData.token) {",
                                     "    pm.collectionVariables.set(\"jwtToken\", jsonData.token);",
+                                    "}",
+                                    "if (jsonData.customerId) {",
+                                    "    pm.collectionVariables.set(\"customerId\", jsonData.customerId);",
                                     "}"
                                 ],
                                 "type": "text/javascript"
@@ -113,6 +116,59 @@
                         }
                     },
                     "response": []
+                },
+                {
+                    "name": "Get Customer By ID (Internal/Admin)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{jwtToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "http://localhost:8081/api/customers/{{customerId}}",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "8081",
+                            "path": [
+                                "api",
+                                "customers",
+                                "{{customerId}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Validate Customer (Internal)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{jwtToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "http://localhost:8081/api/customers/{{customerId}}/validate",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "8081",
+                            "path": [
+                                "api",
+                                "customers",
+                                "{{customerId}}",
+                                "validate"
+                            ]
+                        }
+                    },
+                    "response": []
                 }
             ]
         }
@@ -120,6 +176,10 @@
     "variable": [
         {
             "key": "jwtToken",
+            "value": ""
+        },
+        {
+            "key": "customerId",
             "value": ""
         }
     ]
