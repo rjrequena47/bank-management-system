@@ -1,4 +1,4 @@
-package com.bank.customers.exception;
+package com.codebytes5.banking.customers.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

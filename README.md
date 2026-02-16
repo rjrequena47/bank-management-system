@@ -14,6 +14,7 @@ Sistema bancario basado en **arquitectura de microservicios** que se comunican e
 Actualmente, el proyecto se encuentra en su fase inicial de desarrollo.
 
 - [x] **HU-01 - Registro de Cliente**
+- [x] **HU-02 - Autenticación (Login)**: Implementado con JWT.
 
 ## 📂 Estructura del Proyecto
 El proyecto utiliza una estructura multi-módulo de Maven para separar las responsabilidades:
@@ -21,16 +22,17 @@ El proyecto utiliza una estructura multi-módulo de Maven para separar las respo
 ```text
 bank-management-system/
 ├── ms-customers/      # Microservicio de Clientes y Seguridad (Puerto 8081)
-├── src/main/java/com/codebytes5/banking/customers/
-│   ├── config/
-│   ├── controller/
-│   ├── dto/
-│   ├── enums/
-│   ├── exception/
-│   ├── mapper/
-│   ├── model/
-│   ├── repository/
-│   └── service/
+│   └── src/main/java/com/codebytes5/banking/customers/
+│      ├── config/
+│      ├── controller/
+│      ├── dto/
+│      ├── enums/
+│      ├── exception/
+│      ├── mapper/
+│      ├── model/
+│      ├── repository/
+│      ├── security/
+│      └── service/
 ├── ms-accounts/       # Microservicio de Cuentas y Transacciones (Puerto 8082)
 ├── docker-compose.yml # Orquestación de bases de datos
 └── BankSystem.postman_collection.json # Pruebas de API
@@ -68,3 +70,8 @@ Esto levantará dos contenedores PostgreSQL:
 Puedes probar el registro de clientes utilizando la colección de Postman incluida:
 1. Importa `BankSystem.postman_collection.json` en Postman.
 2. Ejecuta la petición **Register Customer**.
+
+## 📖 Documentación de API (OpenAPI)
+Cada microservicio expone su propia documentación interactiva mediante Swagger UI.
+
+- **ms-customers**: [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)

@@ -38,6 +38,36 @@
                         }
                     },
                     "response": []
+                },
+                {
+                    "name": "Login Customer",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"carlos.garcia@email.com\",\n    \"password\": \"SecurePass123!\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8081/api/auth/login",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "8081",
+                            "path": [
+                                "api",
+                                "auth",
+                                "login"
+                            ]
+                        }
+                    },
+                    "response": []
                 }
             ]
         }
