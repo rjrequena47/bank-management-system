@@ -14,7 +14,8 @@ Sistema bancario basado en **arquitectura de microservicios** que se comunican e
 Actualmente, el proyecto se encuentra en su fase inicial de desarrollo.
 
 - [x] **HU-01 - Registro de Cliente**
-- [x] **HU-02 - Autenticación (Login)**: Implementado con JWT.
+- [x] **HU-02 - Autenticación (Login)**
+- [x] **HU-03 - Perfil de Cliente**
 
 ## 📂 Estructura del Proyecto
 El proyecto utiliza una estructura multi-módulo de Maven para separar las responsabilidades:
@@ -70,6 +71,8 @@ Esto levantará dos contenedores PostgreSQL:
 Puedes probar el registro de clientes utilizando la colección de Postman incluida:
 1. Importa `BankSystem.postman_collection.json` en Postman.
 2. Ejecuta la petición **Register Customer**.
+3. Ejecuta la petición **Login Customer**.
+4. Ejecuta la petición **Get My Profile** (Con el token resultado de la petición anterior de Login).
 
 ## 📖 Documentación de API (OpenAPI)
 Cada microservicio expone su propia documentación interactiva mediante Swagger UI.
