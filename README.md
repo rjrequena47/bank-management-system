@@ -16,6 +16,15 @@ Actualmente, el proyecto se encuentra en su fase inicial de desarrollo.
 - [x] **HU-01 - Registro de Cliente**
 - [x] **HU-02 - Autenticación (Login)**
 - [x] **HU-03 - Perfil de Cliente**
+- [ ] **HU-04 – Validar existencia y estado de cliente (interno)**
+- [ ] **HU-05 – Crear cuenta bancaria**
+- [ ] **HU-06 – Listar cuentas del cliente**
+- [ ] **HU-07 – Consultar detalle de una cuenta**
+- [ ] **HU-08 – Depósito en cuenta**
+- [ ] **HU-09 – Retiro de cuenta**
+- [ ] **HU-10 – Transferencia entre cuentas**
+- [ ] **HU-11 – Consultar historial de transacciones**
+- [ ] **HU-12 – Manejo de errores entre microservicios**
 
 ## 📂 Estructura del Proyecto
 El proyecto utiliza una estructura multi-módulo de Maven para separar las responsabilidades:
