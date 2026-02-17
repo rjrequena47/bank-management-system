@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+## add files
+.env
+.docker/.env*
+.vim
+ms-customers/.env*
+ms-accounts/.env*
