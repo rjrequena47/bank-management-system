@@ -1,18 +1,46 @@
 services:
-  postgres-customers:
+  db:
+    hostname: db
+    container_name: postgres-databases
     image: postgres:15
-    environment:
-      POSTGRES_DB: customers_db
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
+    shm_size: 128mb
+    env_file:
+      - .docker/.env.development
     ports:
-      - "5433:5432"
+      - 5432:5432
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./init-user-db.sh:/docker-entrypoint-initdb.d/init-user-db.sh
+    networks:
+      - bank-net
+  adminer:
+    hostname: adminer
+    container_name: adminer-bank-system
+    image: adminer:latest
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+    networks:
+      - bank-net
 
-  postgres-accounts:
-    image: postgres:15
+  dozzle:
+    hostname: dozzle
+    container_name: dozzle
+    image: amir20/dozzle:latest
     environment:
-      POSTGRES_DB: accounts_db
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
+      - DOZZLE_ADDR=:9999
+      - DOZZLE_ENABLE_ACTIONS=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     ports:
-      - "5434:5432"
+      - 9999:9999
+    networks:
+      - bank-net
+
+volumes:
+  pg_data:
+
+networks:
+  bank-net:
