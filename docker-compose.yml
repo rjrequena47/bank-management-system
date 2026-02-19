@@ -13,6 +13,7 @@ services:
       - ./init-user-db.sh:/docker-entrypoint-initdb.d/init-user-db.sh
     networks:
       - bank-net
+
   adminer:
     hostname: adminer
     container_name: adminer-bank-system
