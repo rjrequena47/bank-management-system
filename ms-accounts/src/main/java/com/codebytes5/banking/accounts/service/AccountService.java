@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Servicio que implementa el caso de uso de creación de cuentas bancarias.
@@ -82,5 +84,12 @@ public class AccountService {
 
         // 6. Retornar el DTO de respuesta
         return accountMapper.toResponse(savedAccount);
+    }
+
+    public List<AccountResponse> getAccountsByCustomerId(UUID customerId) {
+        return accountRepository.findByCustomerId(customerId)
+                .stream()
+                .map(accountMapper::toResponse)
+                .collect(Collectors.toList());
     }
 }

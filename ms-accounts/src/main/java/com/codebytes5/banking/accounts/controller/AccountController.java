@@ -11,14 +11,16 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -44,7 +46,6 @@ public class AccountController {
     @Operation(summary = "Crear cuenta bancaria", description = "Crea una nueva cuenta bancaria. El customerId se extrae del JWT, nunca del body.", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping
     public ResponseEntity<AccountResponse> createAccount(
-            @AuthenticationPrincipal String email,
             @RequestBody @Valid CreateAccountRequest request) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -53,5 +54,20 @@ public class AccountController {
 
         AccountResponse response = accountService.createAccount(customerId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @Operation(summary = "Obtener mis cuentas bancarias", description = "Retorna todas las cuentas del cliente autenticado. El customerId se extrae del token JWT.", responses = {
+            @ApiResponse(responseCode = "200", description = "Lista de cuentas del cliente", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = AccountResponse.class)))),
+            @ApiResponse(responseCode = "401", description = "No autenticado - Token inválido o ausente"),
+            @ApiResponse(responseCode = "403", description = "No autorizado - Token no tiene permisos")
+    })
+
+    @GetMapping("/my-accounts")
+    public ResponseEntity<List<AccountResponse>> getMyAccounts() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String token = (String) authentication.getCredentials();
+        UUID customerId = jwtService.extractCustomerId(token);
+        List<AccountResponse> accounts = accountService.getAccountsByCustomerId(customerId);
+        return ResponseEntity.ok(accounts);
     }
 }
