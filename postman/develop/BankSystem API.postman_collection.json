@@ -1,0 +1,287 @@
+{
+  "info": {
+    "_postman_id": "5e11dbdf-51c4-46a0-bd47-0e638eb6daec",
+    "name": "BankSystem API",
+    "description": "Colección para el Sistema de Gestión Bancaria",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "5711176"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"dni\": \"12345678A\",\n    \"firstName\": \"Lucas\",\n    \"lastName\": \"Garcia Juares\",\n    \"email\": \"Lucas.Garcia-Juarez@email.com\",\n    \"password\": \"SecurePass123!\",\n    \"phone\": \"+34612345678\",\n    \"address\": \"Calle Mayor 123, Madrid\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/auth/register",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set(\"jwtToken\", jsonData.token);",
+                  "}",
+                  "if (jsonData.customerId) {",
+                  "    pm.collectionVariables.set(\"customerId\", jsonData.customerId);",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"Lucas.Garcia-Juarez@email.com\",\n    \"password\": \"SecurePass123!\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/auth/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Customers",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8081/api/customers/me",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "customers",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Customer By ID (Internal/Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8081/api/customers/{{customerId}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "customers",
+                "{{customerId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validate Customer (Internal)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8081/api/customers/{{customerId}}/validate",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "customers",
+                "{{customerId}}",
+                "validate"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Accounts",
+      "item": [
+        {
+          "name": "http://localhost:8082/api/accounts",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer TU_TOKEN_AQUI"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"accountType\": \"SAVINGS\",\n    \"currency\": \"EUR\",\n    \"alias\": \"Mi cuenta de ahorros\",\n    \"dailyWithdrawalLimit\": 1000.00\n  }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8082/api/accounts",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8082",
+              "path": [
+                "api",
+                "accounts"
+              ]
+            },
+            "description": "Generated from cURL: curl -X POST http://localhost:8082/api/accounts \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer TU_TOKEN_AQUI\" \\\n  -d '{\n    \"accountType\": \"SAVINGS\",\n    \"currency\": \"EUR\",\n    \"alias\": \"Mi cuenta de ahorros\",\n    \"dailyWithdrawalLimit\": 1000.00\n  }'"
+          },
+          "response": []
+        },
+        {
+          "name": "http://localhost:8082/api/accounts/my-accounts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiQ1VTVE9NRVIiLCJjdXN0b21lcklkIjoiNTQ4ZWM1MjQtMThhZS00ZDZkLWJkZjMtNjY4ZmUwODZmNmZmIiwic3ViIjoiTHVjYXMuR2FyY2lhLUp1YXJlekBlbWFpbC5jb20iLCJpYXQiOjE3NzE1NDU1NjksImV4cCI6MTc3MTU0OTE2OX0.aQdGsDxRLpgec3IdoUa5KB9IhLYdPAGHSLkX9BWzKag"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8082/api/accounts/my-accounts",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8082",
+              "path": [
+                "api",
+                "accounts",
+                "my-accounts"
+              ]
+            },
+            "description": "Generated from cURL: curl -X GET http://localhost:8082/api/accounts/my-accounts \\\n  -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiQ1VTVE9NRVIiLCJjdXN0b21lcklkIjoiNTQ4ZWM1MjQtMThhZS00ZDZkLWJkZjMtNjY4ZmUwODZmNmZmIiwic3ViIjoiTHVjYXMuR2FyY2lhLUp1YXJlekBlbWFpbC5jb20iLCJpYXQiOjE3NzE1NDU1NjksImV4cCI6MTc3MTU0OTE2OX0.aQdGsDxRLpgec3IdoUa5KB9IhLYdPAGHSLkX9BWzKag\""
+          },
+          "response": []
+        },
+        {
+          "name": "http://localhost:8082/api/accounts/TU_ACCOUNT_ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer TU_TOKEN"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8082/api/accounts/TU_ACCOUNT_ID",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8082",
+              "path": [
+                "api",
+                "accounts",
+                "TU_ACCOUNT_ID"
+              ]
+            },
+            "description": "Generated from cURL: curl -X GET http://localhost:8082/api/accounts/TU_ACCOUNT_ID \\\n  -H \"Authorization: Bearer TU_TOKEN\""
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "jwtToken",
+      "value": ""
+    },
+    {
+      "key": "customerId",
+      "value": ""
+    }
+  ]
+}
