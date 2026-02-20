@@ -92,4 +92,15 @@ public class AccountService {
                 .map(accountMapper::toResponse)
                 .collect(Collectors.toList());
     }
+
+    public AccountResponse getAccountByIdAndCustomerId(UUID accountId, UUID customerId) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new RuntimeException("Cuenta no encontrada")); // Temporal
+
+        if (!account.getCustomerId().equals(customerId)) {
+            throw new RuntimeException("La cuenta no pertenece al cliente autenticado"); // Temporal
+        }
+
+        return accountMapper.toResponse(account);
+    }
 }

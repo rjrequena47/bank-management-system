@@ -70,4 +70,24 @@ public class AccountController {
         List<AccountResponse> accounts = accountService.getAccountsByCustomerId(customerId);
         return ResponseEntity.ok(accounts);
     }
+
+    @Operation(summary = "Obtener detalle de cuenta específica", description = "Retorna los detalles completos de una cuenta específica. Valida que la cuenta pertenezca al cliente autenticado.", security = @SecurityRequirement(name = "bearerAuth"), responses = {
+            @ApiResponse(responseCode = "200", description = "Detalle de la cuenta"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "La cuenta no pertenece al cliente"),
+            @ApiResponse(responseCode = "404", description = "Cuenta no encontrada")
+    })
+
+    @GetMapping("/{accountId}")
+    public ResponseEntity<AccountResponse> getAccountById(
+            @PathVariable UUID accountId) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String token = (String) authentication.getCredentials();
+        UUID customerId = jwtService.extractCustomerId(token);
+
+        AccountResponse account = accountService.getAccountByIdAndCustomerId(accountId, customerId);
+
+        return ResponseEntity.ok(account);
+    }
 }
