@@ -8,6 +8,8 @@ import com.codebytes5.banking.accounts.enums.AccountStatus;
 import com.codebytes5.banking.accounts.exception.CustomerNotActiveException;
 import com.codebytes5.banking.accounts.exception.CustomerNotFoundException;
 import com.codebytes5.banking.accounts.exception.MaxAccountsReachedException;
+import com.codebytes5.banking.accounts.exception.AccountNotFoundException;
+import com.codebytes5.banking.accounts.exception.UnauthorizedAccountAccessException;
 import com.codebytes5.banking.accounts.mapper.AccountMapper;
 import com.codebytes5.banking.accounts.model.Account;
 import com.codebytes5.banking.accounts.repository.AccountRepository;
@@ -95,10 +97,10 @@ public class AccountService {
 
     public AccountResponse getAccountByIdAndCustomerId(UUID accountId, UUID customerId) {
         Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new RuntimeException("Cuenta no encontrada")); // Temporal
+                .orElseThrow(() -> new AccountNotFoundException("Cuenta no encontrada")); // Temporal
 
         if (!account.getCustomerId().equals(customerId)) {
-            throw new RuntimeException("La cuenta no pertenece al cliente autenticado"); // Temporal
+            throw new UnauthorizedAccountAccessException("La cuenta no pertenece al cliente autenticado"); // Temporal
         }
 
         return accountMapper.toResponse(account);

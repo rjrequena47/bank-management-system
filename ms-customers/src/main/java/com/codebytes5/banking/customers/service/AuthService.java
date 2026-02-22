@@ -15,6 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.codebytes5.banking.customers.exception.ConflictException;
+import com.codebytes5.banking.customers.exception.InvalidCredentialsException;
 
 /**
  * Servicio encargado de la gestión de autenticación y registro de clientes.
@@ -40,10 +42,10 @@ public class AuthService {
     @Transactional
     public CustomerResponse register(CustomerRegistrationRequest request) {
         if (customerRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new ConflictException("Email already exists");
         }
         if (customerRepository.existsByDni(request.getDni())) {
-            throw new RuntimeException("DNI already exists");
+            throw new ConflictException("DNI already exists");
         }
 
         Customer customer = customerMapper.toEntity(request);
@@ -60,14 +62,14 @@ public class AuthService {
      */
     public AuthResponse login(LoginRequest request) {
         Customer customer = customerRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid credentials"));
 
         if (!passwordEncoder.matches(request.getPassword(), customer.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new InvalidCredentialsException("Invalid credentials");
         }
 
         if (customer.getStatus() != CustomerStatus.ACTIVE) {
-            throw new RuntimeException("Customer account is not active");
+            throw new ConflictException("Customer account is not active");
         }
 
         String token = jwtService.generateToken(customer.getId(), customer.getEmail(), customer.getRole().name());

@@ -13,6 +13,11 @@ services:
       - ./init-user-db.sh:/docker-entrypoint-initdb.d/init-user-db.sh
     networks:
       - bank-net
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   adminer:
     hostname: adminer
@@ -40,8 +45,46 @@ services:
     networks:
       - bank-net
 
+  ms-customers:
+    build: ./ms-customers
+    container_name: ms-customers
+    ports:
+      - 8081:8081
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/customers_db
+      - POSTGRES_HOST=db
+      - POSTGRES_DB_CUSTOMERS=customers_db
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+    networks:
+      - bank-net
+
+  ms-accounts:
+    build: ./ms-accounts
+    container_name: ms-accounts
+    ports:
+      - 8082:8082
+    depends_on:
+      db:
+        condition: service_healthy
+      ms-customers:
+        condition: service_started
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/accounts_db
+      - POSTGRES_HOST=db
+      - POSTGRES_DB_ACCOUNTS=accounts_db
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - CUSTOMERS_SERVICE_URL=http://ms-customers:8081
+    networks:
+      - bank-net
+
 volumes:
   pg_data:
+
 
 networks:
   bank-net:

@@ -23,6 +23,7 @@ public class FeignConfig {
                     if (authHeader != null) {
                         template.header("Authorization", authHeader);
                     }
+                    template.header("X-Internal-Service", "ms-accounts");
                 }
             }
         };
