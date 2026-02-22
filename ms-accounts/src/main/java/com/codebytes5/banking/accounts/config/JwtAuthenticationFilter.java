@@ -1,6 +1,5 @@
-package com.codebytes5.banking.customers.config;
+package com.codebytes5.banking.accounts.config;
 
-import com.codebytes5.banking.customers.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,6 +16,7 @@ import java.util.Collections;
 
 /**
  * Filtro que se ejecuta en cada petición para validar el token JWT.
+ * Idéntico al JwtAuthenticationFilter de ms-customers.
  */
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -44,9 +44,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 if (jwtService.isTokenValid(jwt, userEmail)) {
+                    // Store the raw JWT token as credentials so controllers can extract
+                    // additional claims (e.g. customerId) from SecurityContextHolder
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userEmail,
-                            null,
+                            jwt,
                             Collections.emptyList());
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
@@ -54,6 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (Exception e) {
             // Error al procesar el token (expirado, inválido, etc.)
+            // No seteamos autenticación y el SecurityFilterChain se encargará de rechazar
         }
 
         filterChain.doFilter(request, response);

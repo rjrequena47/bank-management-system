@@ -1,4 +1,4 @@
-package com.codebytes5.banking.customers.exception;
+package com.codebytes5.banking.accounts.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,19 +32,8 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<Map<String, Object>> handleInvalidCredentialsException(InvalidCredentialsException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", Instant.now());
-        body.put("status", HttpStatus.UNAUTHORIZED.value());
-        body.put("error", "Unauthorized");
-        body.put("message", ex.getMessage());
-
-        return new ResponseEntity<>(body, HttpStatus.UNAUTHORIZED);
-    }
-
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleResourceNotFoundException(ResourceNotFoundException ex) {
+    @ExceptionHandler({ CustomerNotFoundException.class, AccountNotFoundException.class })
+    public ResponseEntity<Map<String, Object>> handleNotFoundExceptions(RuntimeException ex) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", Instant.now());
         body.put("status", HttpStatus.NOT_FOUND.value());
@@ -54,8 +43,8 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(UnauthorizedAccessException.class)
-    public ResponseEntity<Map<String, Object>> handleUnauthorizedAccessException(UnauthorizedAccessException ex) {
+    @ExceptionHandler({ CustomerNotActiveException.class, UnauthorizedAccountAccessException.class })
+    public ResponseEntity<Map<String, Object>> handleForbiddenExceptions(RuntimeException ex) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", Instant.now());
         body.put("status", HttpStatus.FORBIDDEN.value());
@@ -65,8 +54,8 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.FORBIDDEN);
     }
 
-    @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<Map<String, Object>> handleConflictException(ConflictException ex) {
+    @ExceptionHandler({ MaxAccountsReachedException.class })
+    public ResponseEntity<Map<String, Object>> handleConflictExceptions(RuntimeException ex) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", Instant.now());
         body.put("status", HttpStatus.CONFLICT.value());

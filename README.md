@@ -62,18 +62,107 @@ bank-management-system/
 - Docker y Docker Compose instalados.
 - Java 17+ instalado.
 
-### 2. Iniciar Bases de Datos
-Desde la raíz del proyecto, ejecuta:
-```bash
-docker-compose up -d
-```
-Esto levantará dos contenedores PostgreSQL:
-- `customers_db` en el puerto `5433`.
-- `accounts_db` en el puerto `5434`.
+### 2. Iniciar Bases de Datos y Dozzle logs
 
-### 3. Ejecutar ms-customers
+- crear el archivo .docker/.env.development
+- agregar lo siguiente para el usuario de postgres del contenedor docker
+
+```
+POSTGRES_USER=admin
+POSTGRES_PASSWORD=admin
+```
+
+- Desde la raíz del proyecto, ejecuta:
+
+```bash
+docker compose up -d dozzle
+docker compose up -d db
+```
+
+- abre tu navegado y accede a [http://localhost:9999](http://localhost:9999) para ver los logs en tiempo real de los contenedores
+- en el caso de usar la terminal de postgres desde el contenedor docker puedes usar lo siguiente:
+
+```bash
+docker exec -it postgres-databases psql -U admin
+```
+
+- opcional levantar el projecto adminer para revisar y administrar las bases de datos
+
+```bash
+docker compose up -d adminer
+```
+
+- abre tu navegado y accede a [http://localhost:8080](http://localhost:8080)
+
+### 3. Parar base de datos y volumenes
+
+- en el caso de volver a iniciar bases de datos desde cero ejecute el siguiente comando
+
+```bash
+docker compose down -v
+```
+
+- este comando bajara a todos los servicios y tambien eliminara los volumnes, si no quieres eliminar los volumnes ejecuta el siguiente comando:
+
+```bash
+docker compose down
+```
+
+### 4. Ejecutar ms-customers
+#### 4.1 Ejecutar con variables de entorno
+
+- Crear el archivo **ms-customers/.env**
+
+```
+# spring boot variables
+CUSTOMERS_SERVER_PORT=8081
+
+# spring boot database variables
+POSTGRES_USER=admin
+POSTGRES_PASSWORD=admin
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB_CUSTOMERS=ms_customers_db
+```
+
+- Crear el archivo **ms-accounts/.env**
+
+```
+# spring boot variables
+ACCOUNTS_SERVER_PORT=8082
+
+# spring boot database variables
+POSTGRES_USER=admin
+POSTGRES_PASSWORD=admin
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB_ACCOUNTS=ms_accounts_db
+```
+
+#### 4.2 Ejecutar sin variables de entorno
+
+- ejecucion para windows
+
 ```bash
 ./mvnw -pl ms-customers spring-boot:run
+```
+
+- ejecucion para linux
+
+```bash
+mvn -pl ms-customers spring-boot:run
+```
+
+#### 4.3 Compilacion y limpieza de dependencias
+
+- resolucion de solo dependencias
+```
+mvn -pl ms-customers dependency:resolve
+```
+
+- limpieza y compilacion
+```
+mvn -pl ms-customers clean compile
 ```
 
 ## 🧪 Pruebas
