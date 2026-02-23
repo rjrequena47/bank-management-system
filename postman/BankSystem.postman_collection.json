@@ -273,6 +273,41 @@
                         }
                     },
                     "response": []
+                },
+                {
+                    "name": "Deposit Account",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{jwtToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"amount\": 500.50,\n    \"description\": \"Depósito de prueba mensual\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8082/api/accounts/{{accountId}}/deposit",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "8082",
+                            "path": [
+                                "api",
+                                "accounts",
+                                "{{accountId}}",
+                                "deposit"
+                            ]
+                        }
+                    },
+                    "response": []
                 }
             ]
         }

@@ -17,10 +17,10 @@ Actualmente, el proyecto se encuentra en su fase inicial de desarrollo.
 - [x] **HU-02 - Autenticación (Login)**
 - [x] **HU-03 - Perfil de Cliente**
 - [x] **HU-04 – Validar existencia y estado de cliente (interno)**
-- [ ] **HU-05 – Crear cuenta bancaria**
-- [ ] **HU-06 – Listar cuentas del cliente**
-- [ ] **HU-07 – Consultar detalle de una cuenta**
-- [ ] **HU-08 – Depósito en cuenta**
+- [x] **HU-05 – Crear cuenta bancaria**
+- [x] **HU-06 – Listar cuentas del cliente**
+- [x] **HU-07 – Consultar detalle de una cuenta**
+- [x] **HU-08 – Depósito en cuenta**
 - [ ] **HU-09 – Retiro de cuenta**
 - [ ] **HU-10 – Transferencia entre cuentas**
 - [ ] **HU-11 – Consultar historial de transacciones**
@@ -44,6 +44,17 @@ bank-management-system/
 │      ├── security/
 │      └── service/
 ├── ms-accounts/       # Microservicio de Cuentas y Transacciones (Puerto 8082)
+│   └── src/main/java/com/codebytes5/banking/accounts/
+│      ├── client/
+│      ├── config/
+│      ├── controller/
+│      ├── dto/
+│      ├── enums/
+│      ├── exception/
+│      ├── mapper/
+│      ├── model/
+│      ├── repository/
+│      └── service/
 ├── docker-compose.yml # Orquestación de bases de datos
 └── BankSystem.postman_collection.json # Pruebas de API
 ```

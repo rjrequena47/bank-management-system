@@ -3,7 +3,10 @@ package com.codebytes5.banking.accounts.controller;
 import com.codebytes5.banking.accounts.config.JwtService;
 import com.codebytes5.banking.accounts.dto.AccountResponse;
 import com.codebytes5.banking.accounts.dto.CreateAccountRequest;
+import com.codebytes5.banking.accounts.dto.DepositRequest;
+import com.codebytes5.banking.accounts.dto.TransactionResponse;
 import com.codebytes5.banking.accounts.service.AccountService;
+import com.codebytes5.banking.accounts.service.TransactionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,6 +37,7 @@ import java.util.UUID;
 public class AccountController {
 
     private final AccountService accountService;
+    private final TransactionService transactionService;
     private final JwtService jwtService;
 
     /**
@@ -88,5 +92,21 @@ public class AccountController {
         AccountResponse account = accountService.getAccountByIdAndCustomerId(accountId, customerId);
 
         return ResponseEntity.ok(account);
+    }
+
+    @Operation(summary = "Realizar un depósito", description = "Realiza un depósito en una cuenta específica. Valida que la cuenta pertenezca al cliente autenticado y esté activa.", security = @SecurityRequirement(name = "bearerAuth"))
+    @PostMapping("/{accountId}/deposit")
+    public ResponseEntity<TransactionResponse> deposit(
+            @PathVariable java.util.UUID accountId,
+            @RequestBody @Valid DepositRequest request) {
+
+        System.out.println("REACHED DEPOSIT ENDPOINT FOR ACCOUNT: " + accountId);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String token = (String) authentication.getCredentials();
+        java.util.UUID customerId = jwtService.extractCustomerId(token);
+
+        TransactionResponse response = transactionService.deposit(accountId, customerId, request);
+        return ResponseEntity.ok(response);
     }
 }
