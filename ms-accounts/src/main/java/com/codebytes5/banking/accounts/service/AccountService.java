@@ -68,13 +68,17 @@ public class AccountService {
 
         // 4. Crear la entidad Account
         Instant now = Instant.now();
+        BigDecimal dailyLimit = request.getDailyWithdrawalLimit() != null
+                ? request.getDailyWithdrawalLimit()
+                : BigDecimal.valueOf(1000.00);
+
         Account account = Account.builder()
                 .customerId(customerId)
                 .accountNumber(iban)
                 .accountType(request.getAccountType())
                 .currency(request.getCurrency())
                 .alias(request.getAlias())
-                .dailyWithdrawalLimit(request.getDailyWithdrawalLimit())
+                .dailyWithdrawalLimit(dailyLimit)
                 .balance(BigDecimal.ZERO)
                 .status(AccountStatus.ACTIVE)
                 .createdAt(now)

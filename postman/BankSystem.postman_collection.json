@@ -308,6 +308,41 @@
                         }
                     },
                     "response": []
+                },
+                {
+                    "name": "Withdraw Account",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{jwtToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"amount\": 150.00,\n    \"description\": \"Retiro en cajero automático\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8082/api/accounts/{{accountId}}/withdraw",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "8082",
+                            "path": [
+                                "api",
+                                "accounts",
+                                "{{accountId}}",
+                                "withdraw"
+                            ]
+                        }
+                    },
+                    "response": []
                 }
             ]
         }

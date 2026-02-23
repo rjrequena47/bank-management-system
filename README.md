@@ -8,10 +8,10 @@
 [![Docker](https://img.shields.io/badge/Docker-Compose-informational?logo=docker)](https://www.docker.com/)
 [![Postman](https://img.shields.io/badge/Postman-FF6C37?logo=postman&logoColor=white)](#)
 
-Sistema bancario basado en **arquitectura de microservicios** que se comunican entre sí para gestionar clientes y sus cuentas bancarias, permitiendo operaciones como transferencias, consultas de saldo y movimientos.
+Sistema bancario basado en **arquitectura de microservicios**. Se compone de los servicios **ms-customers** (Gestión de Identidad y Perfil, Seguridad con JWT) y **ms-accounts** (Cuentas y Transacciones), los cuales se comunican entre sí para validar la autorización de un cliente antes de procesar operaciones como transferencias, depósitos y retiros de efectivo.
 
 ## 🚀 Estado del Proyecto
-Actualmente, el proyecto se encuentra en su fase inicial de desarrollo.
+El proyecto está recibiendo activamente nuevas funcionalidades (Sprints en curso).
 
 - [x] **HU-01 - Registro de Cliente**
 - [x] **HU-02 - Autenticación (Login)**
@@ -21,7 +21,7 @@ Actualmente, el proyecto se encuentra en su fase inicial de desarrollo.
 - [x] **HU-06 – Listar cuentas del cliente**
 - [x] **HU-07 – Consultar detalle de una cuenta**
 - [x] **HU-08 – Depósito en cuenta**
-- [ ] **HU-09 – Retiro de cuenta**
+- [x] **HU-09 – Retiro de cuenta**
 - [ ] **HU-10 – Transferencia entre cuentas**
 - [ ] **HU-11 – Consultar historial de transacciones**
 - [ ] **HU-12 – Manejo de errores entre microservicios**
@@ -177,13 +177,17 @@ mvn -pl ms-customers clean compile
 ```
 
 ## 🧪 Pruebas
-Puedes probar el registro de clientes utilizando la colección de Postman incluida:
+Puedes probar todo el escenario de uso utilizando la colección de Postman incluida. El flujo recomendado es el siguiente:
 1. Importa `BankSystem.postman_collection.json` en Postman.
-2. Ejecuta la petición **Register Customer**.
-3. Ejecuta la petición **Login Customer**.
-4. Ejecuta la petición **Get My Profile** (Con el token resultado de la petición anterior de Login).
+2. Expande la carpeta **Auth** y ejecuta la petición **Register Customer**.
+3. Ejecuta la petición **Login Customer**. (Esto auto-guardará tu token JWT local para futuras peticiones).
+4. Ejecuta la petición **Get My Profile** en la carpeta **Customers** para validar tus datos.
+5. Expande la carpeta **Accounts** y ejecuta **Create Account** (Esto auto-guardará el ID de cuenta generado para futuras peticiones).
+6. Ejecuta **Get My Accounts** o **Get Account By ID** para ver reflejada la cuenta en el sistema.
+7. Ejecuta la petición **Deposit Account** para sumar saldo al balance de tu cuenta. *(Próximamente: Withdraw)*
 
 ## 📖 Documentación de API (OpenAPI)
-Cada microservicio expone su propia documentación interactiva mediante Swagger UI.
+Cada microservicio expone su propia documentación interactiva mediante Swagger UI, lista para probar sin herramientas externas (sólo copiando el token `Bearer`).
 
-- **ms-customers**: [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
+- **ms-customers**: [http://localhost:8081/swagger-ui/index.html](http://localhost:8081/swagger-ui/index.html)
+- **ms-accounts**: [http://localhost:8082/swagger-ui/index.html](http://localhost:8082/swagger-ui/index.html)
