@@ -1,5 +1,7 @@
 package com.codebytes5.banking.accounts.exception;
 
+import com.codebytes5.banking.accounts.exception.InsufficientBalanceException;
+import com.codebytes5.banking.accounts.exception.DailyWithdrawalLimitExceededException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -66,6 +68,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({ InvalidTransactionException.class })
     public ResponseEntity<Map<String, Object>> handleInvalidTransactionExceptions(RuntimeException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", Instant.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Bad Request");
+        body.put("message", ex.getMessage());
+
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler({ InsufficientBalanceException.class, DailyWithdrawalLimitExceededException.class })
+    public ResponseEntity<Map<String, Object>> handleWithdrawalExceptions(RuntimeException ex) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", Instant.now());
         body.put("status", HttpStatus.BAD_REQUEST.value());

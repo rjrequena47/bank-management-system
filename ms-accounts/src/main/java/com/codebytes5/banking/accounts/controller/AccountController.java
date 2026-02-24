@@ -5,6 +5,7 @@ import com.codebytes5.banking.accounts.dto.AccountResponse;
 import com.codebytes5.banking.accounts.dto.CreateAccountRequest;
 import com.codebytes5.banking.accounts.dto.DepositRequest;
 import com.codebytes5.banking.accounts.dto.TransactionResponse;
+import com.codebytes5.banking.accounts.dto.WithdrawalRequest;
 import com.codebytes5.banking.accounts.service.AccountService;
 import com.codebytes5.banking.accounts.service.TransactionService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -107,6 +108,20 @@ public class AccountController {
         java.util.UUID customerId = jwtService.extractCustomerId(token);
 
         TransactionResponse response = transactionService.deposit(accountId, customerId, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Realizar un retiro", description = "Realiza un retiro de una cuenta específica. Valida que la cuenta pertenezca al cliente, esté activa, tenga fondos suficientes y no exceda el límite diario.", security = @SecurityRequirement(name = "bearerAuth"))
+    @PostMapping("/{accountId}/withdraw")
+    public ResponseEntity<TransactionResponse> withdraw(
+            @PathVariable java.util.UUID accountId,
+            @RequestBody @Valid WithdrawalRequest request) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String token = (String) authentication.getCredentials();
+        java.util.UUID customerId = jwtService.extractCustomerId(token);
+
+        TransactionResponse response = transactionService.withdraw(accountId, customerId, request);
         return ResponseEntity.ok(response);
     }
 }
