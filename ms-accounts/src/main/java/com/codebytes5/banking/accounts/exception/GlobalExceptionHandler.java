@@ -33,7 +33,8 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler({ CustomerNotFoundException.class, AccountNotFoundException.class })
+    @ExceptionHandler({ CustomerNotFoundException.class, AccountNotFoundException.class,
+            TransferNotFoundException.class })
     public ResponseEntity<Map<String, Object>> handleNotFoundExceptions(RuntimeException ex) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", Instant.now());
