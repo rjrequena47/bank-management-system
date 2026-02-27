@@ -176,6 +176,11 @@ mvn -pl ms-customers dependency:resolve
 mvn -pl ms-customers clean compile
 ```
 
+- habilitar logs modo=TRACE spring boot
+```
+mvn -pl ms-customers -Dspring-boot.run.arguments="--logging.level.root=TRACE"
+```
+
 ## 🧪 Pruebas
 Puedes probar todo el escenario de uso utilizando la colección de Postman incluida. El flujo recomendado es el siguiente:
 1. Importa `BankSystem.postman_collection.json` en Postman.
