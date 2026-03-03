@@ -19,6 +19,40 @@ services:
       timeout: 5s
       retries: 5
 
+  ms-customers-dev:
+    container_name: ms-customers-dev
+    image: maven:3.9.6-eclipse-temurin-17
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - ~/.m2:/root/.m2
+    command: mvn -pl ms-customers spring-boot:run
+    ports:
+      - 8081:8081
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - bank-net
+
+  ms-accounts-dev:
+    container_name: ms-accounts-dev
+    image: maven:3.9.6-eclipse-temurin-17
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - ~/.m2:/root/.m2
+    command: mvn -pl ms-accounts spring-boot:run
+    ports:
+      - 8082:8082
+    depends_on:
+      db:
+        condition: service_healthy
+      ms-customers-dev:
+        condition: service_started
+    networks:
+      - bank-net
+
   adminer:
     hostname: adminer
     container_name: adminer-bank-system
