@@ -22,7 +22,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -124,4 +130,28 @@ public class AccountController {
         TransactionResponse response = transactionService.withdraw(accountId, customerId, request);
         return ResponseEntity.ok(response);
     }
+
+    @Operation(summary = "Obtener historial de movimientos", description = "Retorna el historial de transacciones de una cuante con paginacion y filtros. Solo accesible por el dueño de la cuenta.", security = @SecurityRequirement(name = "bearerAuth"))
+    @GetMapping("/{accountId}/transactions")
+    public ResponseEntity<org.springframework.data.domain.Page<TransactionResponse>> getAccountTransactions(
+            @PathVariable UUID accountId,
+            @RequestParam(required = false) Instant startDate,
+            @RequestParam(required = false) Instant endDate,
+            @RequestParam(required = false) com.codebytes5.banking.accounts.enums.TransactionType type,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDirection) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String token = (String) authentication.getCredentials();
+        UUID customerId = jwtService.extractCustomerId(token);
+
+        org.springframework.data.domain.Sort sort = org.springframework.data.domain.Sort
+                .by(org.springframework.data.domain.Sort.Direction.fromString(sortDirection), sortBy);
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size,
+                sort);
+        org.springframework.data.domain.Page<TransactionResponse> transactions = transactionService
+                .getTransactionsByAccount(accountId, customerId, startDate, endDate, type, pageable);
+        return ResponseEntity.ok(transactions);
+    };
 }

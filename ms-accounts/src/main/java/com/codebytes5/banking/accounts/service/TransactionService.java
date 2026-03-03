@@ -19,6 +19,9 @@ import com.codebytes5.banking.accounts.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import com.codebytes5.banking.accounts.dto.TransactionResponse;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -130,4 +133,26 @@ public class TransactionService {
 
         return transactionMapper.toResponse(savedTransaction);
     }
+
+    @Transactional(readOnly = true)
+    public Page<TransactionResponse> getTransactionsByAccount(
+            UUID accountId,
+            UUID customerId,
+            Instant startDate,
+            Instant endDate,
+            TransactionType type,
+            Pageable pageable) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new AccountNotFoundException("Cuenta no encontrada"));
+
+        if (!account.getCustomerId().equals(customerId)) {
+            throw new UnauthorizedAccountAccessException("La cuenta no pertenece al cliente autenticado");
+        }
+
+        Page<Transaction> transactionsPage = transactionRepository.findByAccountIdAndCreatedAtBetweenAndType(accountId,
+                startDate, endDate, type, pageable);
+
+        return transactionsPage.map(transactionMapper::toResponse);
+    }
+
 }
