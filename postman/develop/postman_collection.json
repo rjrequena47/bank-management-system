@@ -1,433 +1,485 @@
 {
-    "info": {
-        "_postman_id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
-        "name": "Bank Management System",
-        "description": "Collection for testing the Bank Management System microservices.",
-        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  "info": {
+    "_postman_id": "f954168f-0fdd-478e-8fdb-7bb697f7bd70",
+    "name": "Bank Management System",
+    "description": "Collection for testing the Bank Management System microservices.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "5711176"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"dni\": \"12345678A\",\r\n    \"firstName\": \"Carlos\",\r\n    \"lastName\": \"García López\",\r\n    \"email\": \"carlos.garcia@email.com\",\r\n    \"password\": \"SecurePass123!\",\r\n    \"phone\": \"+34612345678\",\r\n    \"address\": \"Calle Mayor 123, Madrid\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/auth/register",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();\r",
+                  "if (jsonData.token) {\r",
+                  "    pm.collectionVariables.set(\"jwtToken\", jsonData.token);\r",
+                  "    console.log(\"Token captured: \" + jsonData.token);\r",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\": \"carlos.garcia@email.com\",\r\n    \"password\": \"SecurePass123!\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/auth/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     },
-    "item": [
+    {
+      "name": "Accounts",
+      "item": [
         {
-            "name": "Auth",
-            "item": [
+          "name": "Create Savings Account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();\r",
+                  "if (jsonData.id) {\r",
+                  "    pm.collectionVariables.set(\"accountId\", jsonData.id);\r",
+                  "    pm.collectionVariables.set(\"accountNumber\", jsonData.accountNumber);\r",
+                  "    console.log(\"Account captured: \" + jsonData.id);\r",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
                 {
-                    "name": "Register",
-                    "request": {
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\r\n    \"dni\": \"12345678A\",\r\n    \"firstName\": \"Carlos\",\r\n    \"lastName\": \"García López\",\r\n    \"email\": \"carlos.garcia@email.com\",\r\n    \"password\": \"SecurePass123!\",\r\n    \"phone\": \"+34612345678\",\r\n    \"address\": \"Calle Mayor 123, Madrid\"\r\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "http://localhost:8081/api/auth/register",
-                            "protocol": "http",
-                            "host": [
-                                "localhost"
-                            ],
-                            "port": "8081",
-                            "path": [
-                                "api",
-                                "auth",
-                                "register"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Login",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "var jsonData = pm.response.json();\r",
-                                    "if (jsonData.token) {\r",
-                                    "    pm.collectionVariables.set(\"jwtToken\", jsonData.token);\r",
-                                    "    console.log(\"Token captured: \" + jsonData.token);\r",
-                                    "}"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\r\n    \"email\": \"carlos.garcia@email.com\",\r\n    \"password\": \"SecurePass123!\"\r\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "http://localhost:8081/api/auth/login",
-                            "protocol": "http",
-                            "host": [
-                                "localhost"
-                            ],
-                            "port": "8081",
-                            "path": [
-                                "api",
-                                "auth",
-                                "login"
-                            ]
-                        }
-                    },
-                    "response": []
+                  "key": "token",
+                  "value": "{{jwtToken}}",
+                  "type": "string"
                 }
-            ]
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"accountType\": \"SAVINGS\",\r\n    \"currency\": \"BOB\",\r\n    \"alias\": \"Mi Cuenta de Ahorros\",\r\n    \"dailyWithdrawalLimit\": 1000\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8082/api/accounts",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8082",
+              "path": [
+                "api",
+                "accounts"
+              ]
+            }
+          },
+          "response": []
         },
         {
-            "name": "Accounts",
-            "item": [
+          "name": "Create Checking Account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();\r",
+                  "if (jsonData.id) {\r",
+                  "    pm.collectionVariables.set(\"accountId\", jsonData.id);\r",
+                  "    pm.collectionVariables.set(\"accountNumber\", jsonData.accountNumber);\r",
+                  "    console.log(\"Account captured: \" + jsonData.id);\r",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
                 {
-                    "name": "Create Savings Account",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "var jsonData = pm.response.json();\r",
-                                    "if (jsonData.id) {\r",
-                                    "    pm.collectionVariables.set(\"accountId\", jsonData.id);\r",
-                                    "    pm.collectionVariables.set(\"accountNumber\", jsonData.accountNumber);\r",
-                                    "    console.log(\"Account captured: \" + jsonData.id);\r",
-                                    "}"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "auth": {
-                            "type": "bearer",
-                            "bearer": [
-                                {
-                                    "key": "token",
-                                    "value": "{{jwtToken}}",
-                                    "type": "string"
-                                }
-                            ]
-                        },
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\r\n    \"accountType\": \"SAVINGS\",\r\n    \"currency\": \"BOB\",\r\n    \"alias\": \"Mi Cuenta de Ahorros\",\r\n    \"dailyWithdrawalLimit\": 1000\r\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "http://localhost:8082/api/accounts",
-                            "protocol": "http",
-                            "host": [
-                                "localhost"
-                            ],
-                            "port": "8082",
-                            "path": [
-                                "api",
-                                "accounts"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Create Checking Account",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "var jsonData = pm.response.json();\r",
-                                    "if (jsonData.id) {\r",
-                                    "    pm.collectionVariables.set(\"accountId\", jsonData.id);\r",
-                                    "    pm.collectionVariables.set(\"accountNumber\", jsonData.accountNumber);\r",
-                                    "    console.log(\"Account captured: \" + jsonData.id);\r",
-                                    "}"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "auth": {
-                            "type": "bearer",
-                            "bearer": [
-                                {
-                                    "key": "token",
-                                    "value": "{{jwtToken}}",
-                                    "type": "string"
-                                }
-                            ]
-                        },
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\r\n    \"accountType\": \"CHECKING\",\r\n    \"currency\": \"BOB\",\r\n    \"alias\": \"Cuenta Corriente Gastos\",\r\n    \"dailyWithdrawalLimit\": 5000\r\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "http://localhost:8082/api/accounts",
-                            "protocol": "http",
-                            "host": [
-                                "localhost"
-                            ],
-                            "port": "8082",
-                            "path": [
-                                "api",
-                                "accounts"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Max Accounts Limit Error",
-                    "request": {
-                        "auth": {
-                            "type": "bearer",
-                            "bearer": [
-                                {
-                                    "key": "token",
-                                    "value": "{{jwtToken}}",
-                                    "type": "string"
-                                }
-                            ]
-                        },
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\r\n    \"accountType\": \"SAVINGS\",\r\n    \"currency\": \"BOB\",\r\n    \"alias\": \"Excediendo el límite\",\r\n    \"dailyWithdrawalLimit\": 100\r\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "http://localhost:8082/api/accounts",
-                            "protocol": "http",
-                            "host": [
-                                "localhost"
-                            ],
-                            "port": "8082",
-                            "path": [
-                                "api",
-                                "accounts"
-                            ]
-                        },
-                        "description": "Trigger this request multiple times to hit the MAX_ACCOUNTS_PER_CUSTOMER = 3 limit."
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Get My Accounts",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "var jsonData = pm.response.json();\r",
-                                    "if (jsonData && jsonData.length > 0) {\r",
-                                    "    var firstAccount = jsonData[0];\r",
-                                    "    pm.collectionVariables.set(\"accountId\", firstAccount.id);\r",
-                                    "    pm.collectionVariables.set(\"accountNumber\", firstAccount.accountNumber);\r",
-                                    "    console.log(\"Account captured from list: \" + firstAccount.id);\r",
-                                    "}"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "auth": {
-                            "type": "bearer",
-                            "bearer": [
-                                {
-                                    "key": "token",
-                                    "value": "{{jwtToken}}",
-                                    "type": "string"
-                                }
-                            ]
-                        },
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "http://localhost:8082/api/accounts/my-accounts",
-                            "protocol": "http",
-                            "host": [
-                                "localhost"
-                            ],
-                            "port": "8082",
-                            "path": [
-                                "api",
-                                "accounts",
-                                "my-accounts"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Deposit Funds",
-                    "request": {
-                        "auth": {
-                            "type": "bearer",
-                            "bearer": [
-                                {
-                                    "key": "token",
-                                    "value": "{{jwtToken}}",
-                                    "type": "string"
-                                }
-                            ]
-                        },
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\r\n    \"amount\": 1000.00,\r\n    \"description\": \"Depósito inicial de prueba\"\r\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "http://localhost:8082/api/accounts/{{accountId}}/deposit",
-                            "protocol": "http",
-                            "host": [
-                                "localhost"
-                            ],
-                            "port": "8082",
-                            "path": [
-                                "api",
-                                "accounts",
-                                "{{accountId}}",
-                                "deposit"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Withdraw Funds",
-                    "request": {
-                        "auth": {
-                            "type": "bearer",
-                            "bearer": [
-                                {
-                                    "key": "token",
-                                    "value": "{{jwtToken}}",
-                                    "type": "string"
-                                }
-                            ]
-                        },
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\r\n    \"amount\": 50.00,\r\n    \"description\": \"Retiro de prueba\"\r\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "http://localhost:8082/api/accounts/{{accountId}}/withdraw",
-                            "protocol": "http",
-                            "host": [
-                                "localhost"
-                            ],
-                            "port": "8082",
-                            "path": [
-                                "api",
-                                "accounts",
-                                "{{accountId}}",
-                                "withdraw"
-                            ]
-                        }
-                    },
-                    "response": []
+                  "key": "token",
+                  "value": "{{jwtToken}}",
+                  "type": "string"
                 }
-            ]
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"accountType\": \"CHECKING\",\r\n    \"currency\": \"BOB\",\r\n    \"alias\": \"Cuenta Corriente Gastos\",\r\n    \"dailyWithdrawalLimit\": 5000\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8082/api/accounts",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8082",
+              "path": [
+                "api",
+                "accounts"
+              ]
+            }
+          },
+          "response": []
         },
         {
-            "name": "Transfers",
-            "item": [
+          "name": "Max Accounts Limit Error",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
                 {
-                    "name": "Transfer Money",
-                    "request": {
-                        "auth": {
-                            "type": "bearer",
-                            "bearer": [
-                                {
-                                    "key": "token",
-                                    "value": "{{jwtToken}}",
-                                    "type": "string"
-                                }
-                            ]
-                        },
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\r\n    \"sourceAccountId\": \"{{accountId}}\",\r\n    \"destinationAccountNumber\": \"DESTINATION_IBAN\",\r\n    \"amount\": 100.00,\r\n    \"concept\": \"Prueba de transferencia\"\r\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "http://localhost:8082/api/transfers",
-                            "protocol": "http",
-                            "host": [
-                                "localhost"
-                            ],
-                            "port": "8082",
-                            "path": [
-                                "api",
-                                "transfers"
-                            ]
-                        }
-                    },
-                    "response": []
+                  "key": "token",
+                  "value": "{{jwtToken}}",
+                  "type": "string"
                 }
-            ]
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"accountType\": \"SAVINGS\",\r\n    \"currency\": \"BOB\",\r\n    \"alias\": \"Excediendo el límite\",\r\n    \"dailyWithdrawalLimit\": 100\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8082/api/accounts",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8082",
+              "path": [
+                "api",
+                "accounts"
+              ]
+            },
+            "description": "Trigger this request multiple times to hit the MAX_ACCOUNTS_PER_CUSTOMER = 3 limit."
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Accounts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();\r",
+                  "if (jsonData && jsonData.length > 0) {\r",
+                  "    var firstAccount = jsonData[0];\r",
+                  "    pm.collectionVariables.set(\"accountId\", firstAccount.id);\r",
+                  "    pm.collectionVariables.set(\"accountNumber\", firstAccount.accountNumber);\r",
+                  "    console.log(\"Account captured from list: \" + firstAccount.id);\r",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwtToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8082/api/accounts/my-accounts",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8082",
+              "path": [
+                "api",
+                "accounts",
+                "my-accounts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Deposit Funds",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwtToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"amount\": 1000.00,\r\n    \"description\": \"Depósito inicial de prueba\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8082/api/accounts/{{accountId}}/deposit",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8082",
+              "path": [
+                "api",
+                "accounts",
+                "{{accountId}}",
+                "deposit"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Withdraw Funds",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwtToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"amount\": 50.00,\r\n    \"description\": \"Retiro de prueba\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8082/api/accounts/{{accountId}}/withdraw",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8082",
+              "path": [
+                "api",
+                "accounts",
+                "{{accountId}}",
+                "withdraw"
+              ]
+            }
+          },
+          "response": []
         }
-    ],
-    "variable": [
+      ]
+    },
+    {
+      "name": "Transfers",
+      "item": [
         {
-            "key": "jwtToken",
-            "value": ""
-        },
-        {
-            "key": "accountId",
-            "value": ""
-        },
-        {
-            "key": "accountNumber",
-            "value": ""
+          "name": "Transfer Money",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwtToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"sourceAccountId\": \"{{accountId}}\",\r\n    \"destinationAccountNumber\": \"DESTINATION_IBAN\",\r\n    \"amount\": 10.00,\r\n    \"concept\": \"Prueba de transferencia\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8082/api/transfers",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8082",
+              "path": [
+                "api",
+                "transfers"
+              ]
+            }
+          },
+          "response": []
         }
-    ]
+      ]
+    },
+    {
+      "name": "history",
+      "item": [
+        {
+          "name": "http://localhost:8082/api/accounts/{accountId}/transactions?page=0&size=10&sortBy=createdAt&sortDirection=DESC",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {tu-token}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8082/api/accounts/{accountId}/transactions?page=0&size=10&sortBy=createdAt&sortDirection=DESC",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8082",
+              "path": [
+                "api",
+                "accounts",
+                "{accountId}",
+                "transactions"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "createdAt"
+                },
+                {
+                  "key": "sortDirection",
+                  "value": "DESC"
+                }
+              ]
+            },
+            "description": "Generated from cURL: curl -X GET \"http://localhost:8082/api/accounts/{accountId}/transactions?page=0&size=10&sortBy=createdAt&sortDirection=DESC\" \\\n  -H \"Authorization: Bearer {tu-token}\""
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "jwtToken",
+      "value": ""
+    },
+    {
+      "key": "accountId",
+      "value": ""
+    },
+    {
+      "key": "accountNumber",
+      "value": ""
+    }
+  ]
 }
