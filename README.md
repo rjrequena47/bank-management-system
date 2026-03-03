@@ -141,6 +141,7 @@ POSTGRES_DB_CUSTOMERS=ms_customers_db
 ```
 # spring boot variables
 ACCOUNTS_SERVER_PORT=8082
+FEIGN_CLIENT_HOSTNAME=http://ms-customers-dev:8081
 
 # spring boot database variables
 POSTGRES_USER=admin
