@@ -14,6 +14,7 @@ import com.codebytes5.banking.accounts.mapper.AccountMapper;
 import com.codebytes5.banking.accounts.model.Account;
 import com.codebytes5.banking.accounts.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 /**
  * Servicio que implementa el caso de uso de creación de cuentas bancarias.
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AccountService {
@@ -46,20 +48,27 @@ public class AccountService {
      */
     @Transactional
     public AccountResponse createAccount(UUID customerId, CreateAccountRequest request) {
+        log.info("[AccountService] Iniciando creación de cuenta. customerId={}, tipo={}", customerId,
+                request.getAccountType());
+
         // 1. Validar existencia y estado del cliente
         CustomerValidationResponse validation = customerClient.validateCustomer(customerId);
 
         if (!validation.isExists()) {
+            log.warn("[AccountService] Cliente no encontrado en ms-customers. customerId={}", customerId);
             throw new CustomerNotFoundException(customerId);
         }
 
         if (!validation.isActive()) {
+            log.warn("[AccountService] Cliente inactivo en ms-customers. customerId={}", customerId);
             throw new CustomerNotActiveException(customerId);
         }
 
         // 2. Validar límite máximo de cuentas
         long accountCount = accountRepository.countByCustomerId(customerId);
         if (accountCount >= MAX_ACCOUNTS_PER_CUSTOMER) {
+            log.warn("[AccountService] Límite de cuentas alcanzado. customerId={}, cuentasActuales={}", customerId,
+                    accountCount);
             throw new MaxAccountsReachedException();
         }
 
@@ -87,24 +96,36 @@ public class AccountService {
 
         // 5. Persistir la cuenta
         Account savedAccount = accountRepository.save(account);
+        log.info("[AccountService] Cuenta creada exitosamente. accountId={}, customerId={}", savedAccount.getId(),
+                customerId);
 
         // 6. Retornar el DTO de respuesta
         return accountMapper.toResponse(savedAccount);
     }
 
     public List<AccountResponse> getAccountsByCustomerId(UUID customerId) {
-        return accountRepository.findByCustomerId(customerId)
+        log.info("[AccountService] Consultando cuentas por cliente. customerId={}", customerId);
+        List<AccountResponse> accounts = accountRepository.findByCustomerId(customerId)
                 .stream()
                 .map(accountMapper::toResponse)
                 .collect(Collectors.toList());
+        log.info("[AccountService] Cuentas encontradas. customerId={}, total={}", customerId, accounts.size());
+        return accounts;
     }
 
     public AccountResponse getAccountByIdAndCustomerId(UUID accountId, UUID customerId) {
+        log.info("[AccountService] Consultando cuenta por ID. accountId={}, customerId={}", accountId, customerId);
         Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new AccountNotFoundException("Cuenta no encontrada")); // Temporal
+                .orElseThrow(() -> {
+                    log.warn("[AccountService] Cuenta no encontrada. accountId={}", accountId);
+                    return new AccountNotFoundException("Cuenta no encontrada");
+                });
 
         if (!account.getCustomerId().equals(customerId)) {
-            throw new UnauthorizedAccountAccessException("La cuenta no pertenece al cliente autenticado"); // Temporal
+            log.warn(
+                    "[AccountService] Intento de acceso no autorizado. accountId={}, clienteSolicitante={}, dueñoReal={}",
+                    accountId, customerId, account.getCustomerId());
+            throw new UnauthorizedAccountAccessException("La cuenta no pertenece al cliente autenticado");
         }
 
         return accountMapper.toResponse(account);

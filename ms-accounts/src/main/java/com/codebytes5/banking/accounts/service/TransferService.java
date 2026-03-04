@@ -58,19 +58,30 @@ public class TransferService {
 
     @Transactional
     public TransferResponse executeTransfer(UUID customerId, TransferRequest request) {
+        log.info("[TransferService] Iniciando transferencia. originAccountId={}, customerId={}",
+                request.getSourceAccountId(), customerId);
 
         // 1. Validate source account ownership
         Account sourceAccount = accountRepository.findById(request.getSourceAccountId())
-                .orElseThrow(() -> new AccountNotFoundException(
-                        "Cuenta origen no encontrada: " + request.getSourceAccountId()));
+                .orElseThrow(() -> {
+                    log.warn("[TransferService] Cuenta origen no encontrada. accountId={}",
+                            request.getSourceAccountId());
+                    return new AccountNotFoundException(
+                            "Cuenta origen no encontrada: " + request.getSourceAccountId());
+                });
 
         if (!sourceAccount.getCustomerId().equals(customerId)) {
+            log.warn(
+                    "[TransferService] Transferencia denegada: origen no pertenece al cliente. accountId={}, customerId={}",
+                    request.getSourceAccountId(), customerId);
             throw new UnauthorizedAccountAccessException(
                     "La cuenta origen no pertenece al cliente autenticado");
         }
 
         // 2. Validate source account is ACTIVE
         if (sourceAccount.getStatus() != AccountStatus.ACTIVE) {
+            log.warn("[TransferService] Transferencia denegada: cuenta origen inactiva. accountId={}, status={}",
+                    sourceAccount.getId(), sourceAccount.getStatus());
             throw new InvalidTransactionException(
                     "La cuenta origen debe estar activa para realizar una transferencia");
         }
@@ -78,21 +89,26 @@ public class TransferService {
         // 3. Validate customer is ACTIVE via ms-customers
         CustomerValidationResponse validation = customerClient.validateCustomer(customerId);
         if (!validation.isExists()) {
+            log.warn("[TransferService] Cliente no encontrado en ms-customers. customerId={}", customerId);
             throw new CustomerNotFoundException(customerId);
         }
         if (!validation.isActive()) {
+            log.warn("[TransferService] Cliente inactivo en ms-customers. customerId={}", customerId);
             throw new CustomerNotActiveException(customerId);
         }
 
         // 4. Validate amount > 0 (also enforced by @DecimalMin in DTO, but
         // double-check)
         if (request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            log.warn("[TransferService] Transferencia denegada: monto inválido. accountId={}", sourceAccount.getId());
             throw new InvalidTransactionException(
                     "El monto de la transferencia debe ser mayor a cero");
         }
 
         // 5. Validate sufficient balance
         if (sourceAccount.getBalance().compareTo(request.getAmount()) < 0) {
+            log.warn("[TransferService] Transferencia denegada: fondos insuficientes. accountId={}",
+                    sourceAccount.getId());
             throw new InsufficientBalanceException(
                     "Saldo insuficiente para realizar la transferencia. Saldo disponible: "
                             + sourceAccount.getBalance());
@@ -107,9 +123,14 @@ public class TransferService {
         UUID destinationAccountId = null;
 
         if (destinationAccountOpt.isPresent()) {
+            log.info("[TransferService] Transferencia interna. destinationAccountNumber={}",
+                    request.getDestinationAccountNumber());
             Account destinationAccount = destinationAccountOpt.get();
             destinationAccountId = destinationAccount.getId();
             beneficiaryName = resolveBeneficiaryName(destinationAccount.getCustomerId());
+        } else {
+            log.info("[TransferService] Transferencia externa. destinationAccountNumber={}",
+                    request.getDestinationAccountNumber());
         }
 
         // 8. Generate unique transfer reference
@@ -141,6 +162,8 @@ public class TransferService {
             Account destinationAccount = destinationAccountOpt.get();
 
             if (destinationAccount.getStatus() != AccountStatus.ACTIVE) {
+                log.warn("[TransferService] Transferencia interna fallida: cuenta destino inactiva. accountId={}",
+                        destinationAccount.getId());
                 throw new InvalidTransactionException(
                         "La cuenta destino debe estar activa para recibir una transferencia");
             }
@@ -180,6 +203,9 @@ public class TransferService {
                 .build();
 
         Transfer savedTransfer = transferRepository.save(transfer);
+
+        log.info("[TransferService] Transferencia procesada exitosamente. referenceNumber={}, transferId={}",
+                referenceNumber, savedTransfer.getId());
 
         // 12. Return response
         return TransferResponse.builder()
