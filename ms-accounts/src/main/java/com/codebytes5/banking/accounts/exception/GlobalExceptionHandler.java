@@ -1,17 +1,17 @@
 package com.codebytes5.banking.accounts.exception;
 
-import com.codebytes5.banking.accounts.exception.InsufficientBalanceException;
-import com.codebytes5.banking.accounts.exception.DailyWithdrawalLimitExceededException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import lombok.extern.slf4j.Slf4j;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -89,12 +89,36 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(CustomerServiceUnavailableException.class)
+    public ResponseEntity<Map<String, Object>> handleServiceUnavailable(CustomerServiceUnavailableException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", Instant.now());
+        body.put("status", HttpStatus.SERVICE_UNAVAILABLE.value());
+        body.put("error", "Servicio No Disponible");
+        body.put("message", ex.getMessage());
+
+        return new ResponseEntity<>(body, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    @ExceptionHandler(CustomerServiceException.class)
+    public ResponseEntity<Map<String, Object>> handleCustomerServiceError(CustomerServiceException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", Instant.now());
+        body.put("status", HttpStatus.BAD_GATEWAY.value());
+        body.put("error", "Error en Servicio Externo");
+        body.put("message", ex.getMessage());
+
+        return new ResponseEntity<>(body, HttpStatus.BAD_GATEWAY);
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, Object>> handleRuntimeExceptions(RuntimeException ex) {
+        log.warn("[GlobalExceptionHandler] Excepción no controlada capturada: tipo={}, mensaje={}",
+                ex.getClass().getSimpleName(), ex.getMessage());
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", Instant.now());
         body.put("status", HttpStatus.CONFLICT.value());
-        body.put("error", "Business Error");
+        body.put("error", "Error de Negocio");
         body.put("message", ex.getMessage());
 
         return new ResponseEntity<>(body, HttpStatus.CONFLICT);
