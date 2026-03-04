@@ -21,25 +21,23 @@ import lombok.extern.slf4j.Slf4j;
  * exponerse
  * en las respuestas HTTP.
  *
- * <p>
  * Mapeo de códigos HTTP:
- * <ul>
- * <li>400 → {@link InvalidTransactionException} (HTTP 400)</li>
- * <li>403 → {@link CustomerNotActiveException} (HTTP 403)</li>
- * <li>404 → {@link CustomerNotFoundException} (HTTP 404)</li>
- * <li>500 → {@link CustomerServiceException} (HTTP 502)</li>
- * <li>502, 503 → {@link CustomerServiceUnavailableException} (HTTP 503)</li>
- * <li>Otros → {@link CustomerServiceException} (HTTP 502)</li>
- * </ul>
+ * 
+ * 400 → {@link InvalidTransactionException} (HTTP 400)
+ * 403 → {@link CustomerNotActiveException} (HTTP 403)
+ * 404 → {@link CustomerNotFoundException} (HTTP 404)
+ * 500 → {@link CustomerServiceException} (HTTP 502)
+ * 502, 503 → {@link CustomerServiceUnavailableException} (HTTP 503)
+ * Otros → {@link CustomerServiceException} (HTTP 502)
  */
 @Slf4j
 public class CustomerClientErrorDecoder implements ErrorDecoder {
 
     private static final String MSG_SOLICITUD_INVALIDA = "Solicitud inválida enviada al servicio externo.";
-    private static final String MSG_SIN_PERMISOS = "No tiene permisos para acceder al recurso solicitado.";
-    private static final String MSG_NO_ENCONTRADO = "Recurso no encontrado en el servicio externo.";
-    private static final String MSG_ERROR_INTERNO = "Error interno en servicio externo.";
-    private static final String MSG_NO_DISPONIBLE = "Servicio externo no disponible temporalmente.";
+    private static final String MSG_SIN_PERMISOS = "El cliente no está activo. Por favor contacte con soporte.";
+    private static final String MSG_NO_ENCONTRADO = "No se encontró el cliente asociado a esta operación.";
+    private static final String MSG_ERROR_INTERNO = "Ocurrió un error al comunicarse con el servicio de clientes.";
+    private static final String MSG_NO_DISPONIBLE = "El servicio de clientes no está disponible en este momento. Intente más tarde.";
 
     @Override
     public Exception decode(String methodKey, Response response) {

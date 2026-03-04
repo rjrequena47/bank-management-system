@@ -131,7 +131,7 @@ public class GlobalExceptionHandler {
                 request.getRequestURI(), ex.getMessage());
 
         return build(HttpStatus.SERVICE_UNAVAILABLE, "SERVICIO_NO_DISPONIBLE",
-                "Error al comunicarse con un servicio externo.", request);
+                ex.getMessage(), request);
     }
 
     /**
@@ -145,7 +145,7 @@ public class GlobalExceptionHandler {
                 request.getRequestURI(), ex.getMessage());
 
         return build(HttpStatus.BAD_GATEWAY, "ERROR_SERVICIO_EXTERNO",
-                "Error al comunicarse con un servicio externo.", request);
+                ex.getMessage(), request);
     }
 
     // -------------------------------------------------------------------------
