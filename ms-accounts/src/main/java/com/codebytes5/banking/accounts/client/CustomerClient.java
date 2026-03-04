@@ -11,8 +11,16 @@ import java.util.UUID;
 
 /**
  * Cliente Feign para comunicarse con el microservicio ms-customers.
+ *
+ * <p>
+ * Si ms-customers no está disponible, {@link CustomerClientFallbackFactory} se
+ * activa
+ * y lanza
+ * {@link com.codebytes5.banking.accounts.exception.CustomerServiceUnavailableException}
+ * con mensaje en español. Requiere
+ * {@code spring.cloud.openfeign.circuitbreaker.enabled=true}.
  */
-@FeignClient(name = "ms-customers", url = "${customers.service.url}", configuration = FeignConfig.class)
+@FeignClient(name = "ms-customers", url = "${customers.service.url}", configuration = FeignConfig.class, fallbackFactory = CustomerClientFallbackFactory.class)
 public interface CustomerClient {
 
     @GetMapping("/api/customers/{customerId}/validate")
