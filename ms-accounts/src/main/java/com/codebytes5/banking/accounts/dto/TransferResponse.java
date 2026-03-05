@@ -27,6 +27,7 @@ public class TransferResponse {
     private String beneficiaryName;
 
     private BigDecimal amount;
+    private BigDecimal fee;
     private String concept;
     private TransferStatus status;
     private Instant createdAt;

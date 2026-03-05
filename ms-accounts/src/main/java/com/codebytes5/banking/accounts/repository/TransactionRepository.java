@@ -16,19 +16,23 @@ import java.util.UUID;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, UUID> {
-    List<Transaction> findByAccountId(UUID accountId);
+        List<Transaction> findByAccountId(UUID accountId);
 
-    @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t WHERE t.accountId = :accountId AND t.type = :type AND t.createdAt >= :startOfDay AND t.createdAt <= :endOfDay")
-    BigDecimal getSumOfTransactionsByTypeAndDateRange(
-            @Param("accountId") UUID accountId,
-            @Param("type") TransactionType type,
-            @Param("startOfDay") Instant startOfDay,
-            @Param("endOfDay") Instant endOfDay);
+        @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t WHERE t.accountId = :accountId AND t.type = :type AND t.createdAt >= :startOfDay AND t.createdAt <= :endOfDay")
+        BigDecimal getSumOfTransactionsByTypeAndDateRange(
+                        @Param("accountId") UUID accountId,
+                        @Param("type") TransactionType type,
+                        @Param("startOfDay") Instant startOfDay,
+                        @Param("endOfDay") Instant endOfDay);
 
-    Page<Transaction> findByAccountIdAndCreatedAtBetweenAndType(
-            UUID accountId,
-            Instant startDate,
-            Instant endDate,
-            TransactionType type,
-            Pageable pageable);
+        @Query("SELECT t FROM Transaction t WHERE t.accountId = :accountId " +
+                        "AND (cast(:startDate as timestamp) IS NULL OR t.createdAt >= :startDate) " +
+                        "AND (cast(:endDate as timestamp) IS NULL OR t.createdAt <= :endDate) " +
+                        "AND (:type IS NULL OR t.type = :type)")
+        Page<Transaction> findByAccountIdAndFilters(
+                        @Param("accountId") UUID accountId,
+                        @Param("startDate") Instant startDate,
+                        @Param("endDate") Instant endDate,
+                        @Param("type") TransactionType type,
+                        Pageable pageable);
 }

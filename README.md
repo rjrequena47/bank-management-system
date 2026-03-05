@@ -1,37 +1,141 @@
-# CodeBytes BankSystem - Sistema de Gestión Bancaria
+<h1 align="center">
+  CodeBytes BankSystem
+</h1>
 
-[![Java](https://img.shields.io/badge/Java-17+-red?logo=java)](https://www.oracle.com/java/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green?logo=springboot)](https://spring.io/projects/spring-boot)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql)](https://www.postgresql.org/)
-[![Swagger](https://img.shields.io/badge/API-Docs-yellow?logo=swagger)](#)
-[![OpenAPI](https://img.shields.io/badge/OpenAPI-6BA539?logo=openapiinitiative&logoColor=white)](#)
-[![Docker](https://img.shields.io/badge/Docker-Compose-informational?logo=docker)](https://www.docker.com/)
-[![Postman](https://img.shields.io/badge/Postman-FF6C37?logo=postman&logoColor=white)](#)
+<h4 align="center">Sistema de Gestión Bancaria basado en una Arquitectura de Microservicios</h4>
 
-Sistema bancario basado en **arquitectura de microservicios**. Se compone de los servicios **ms-customers** (Gestión de Identidad y Perfil, Seguridad con JWT) y **ms-accounts** (Cuentas y Transacciones), los cuales se comunican entre sí para validar la autorización de un cliente antes de procesar operaciones como transferencias, depósitos y retiros de efectivo.
+<p align="center">
+  <a href="https://www.oracle.com/java/">
+    <img src="https://img.shields.io/badge/Java-17+-red?style=for-the-badge&logo=java" alt="Java 17" />
+  </a>
+  <a href="https://spring.io/projects/spring-boot">
+    <img src="https://img.shields.io/badge/Spring_Boot-3.x-green?style=for-the-badge&logo=springboot" alt="Spring Boot" />
+  </a>
+  <a href="https://www.postgresql.org/">
+    <img src="https://img.shields.io/badge/PostgreSQL-15-blue?style=for-the-badge&logo=postgresql" alt="PostgreSQL" />
+  </a>
+  <a href="#">
+    <img src="https://img.shields.io/badge/API_Docs-Swagger-yellow?style=for-the-badge&logo=swagger" alt="Swagger" />
+  </a>
+  <a href="#">
+    <img src="https://img.shields.io/badge/OpenAPI-3.0-6BA539?style=for-the-badge&logo=openapiinitiative&logoColor=white" alt="OpenAPI" />
+  </a>
+  <a href="https://www.docker.com/">
+    <img src="https://img.shields.io/badge/Docker-Compose-informational?style=for-the-badge&logo=docker" alt="Docker" />
+  </a>
+  <a href="#">
+    <img src="https://img.shields.io/badge/Postman-Testing-FF6C37?style=for-the-badge&logo=postman&logoColor=white" alt="Postman" />
+  </a>
+</p>
 
-## 🚀 Estado del Proyecto
-El proyecto está recibiendo activamente nuevas funcionalidades (Sprints en curso).
+---
 
-- [x] **HU-01 - Registro de Cliente**
-- [x] **HU-02 - Autenticación (Login)**
-- [x] **HU-03 - Perfil de Cliente**
-- [x] **HU-04 – Validar existencia y estado de cliente (interno)**
-- [x] **HU-05 – Crear cuenta bancaria**
-- [x] **HU-06 – Listar cuentas del cliente**
-- [x] **HU-07 – Consultar detalle de una cuenta**
-- [x] **HU-08 – Depósito en cuenta**
-- [x] **HU-09 – Retiro de cuenta**
-- [ ] **HU-10 – Transferencia entre cuentas**
-- [ ] **HU-11 – Consultar historial de transacciones**
-- [ ] **HU-12 – Manejo de errores entre microservicios**
+## 📖 Acerca del Proyecto
 
-## 📂 Estructura del Proyecto
-El proyecto utiliza una estructura multi-módulo de Maven para separar las responsabilidades:
+**CodeBytes BankSystem** es un robusto sistema bancario diseñado con una **Arquitectura de Microservicios**. La solución está dividida en dos componentes principales:
+1. **`ms-customers`** 👤: Responsable de la Gestión de Identidad, Perfil de Usuario, y Seguridad (Autenticación + Autorización con JWT).
+2. **`ms-accounts`** 💳: Encargado del manejo de Cuentas Bancarias y Transacciones (Depósitos, Retiros, Consultas).
+
+Ambos servicios se comunican internamente de forma segura para validar la autorización de un cliente antes de procesar cualquier operación financiera, garantizando fiabilidad e integridad de los datos.
+
+## 🏗 Arquitectura del Sistema
+
+A continuación, se detalla la arquitectura general de los microservicios, bases de datos, y el flujo de comunicación, donde cada servicio gestiona su propia base de datos (PostgreSQL):
+
+```mermaid
+graph TD;
+    Client([📱 Cliente / Postman]) -->|HTTP REST| ms_customers;
+    Client -->|HTTP REST| ms_accounts;
+    
+    subgraph Microservicios Spring Boot
+        ms_customers[👤 ms-customers<br/>Puerto: 8081]
+        ms_accounts[💳 ms-accounts<br/>Puerto: 8082]
+        
+        ms_accounts -.->|Llamada Feign/WebClient| ms_customers;
+    end
+    
+    subgraph Bases de Datos Relacionales
+        ms_customers -->|JPA / Hibernate| db_customers[(🐘 PostgreSQL<br/>ms_customers_db)];
+        ms_accounts -->|JPA / Hibernate| db_accounts[(🐘 PostgreSQL<br/>ms_accounts_db)];
+    end
+```
+
+## 📊 Modelo de Datos (ER Diagram)
+
+La persistencia del sistema se basa en el siguiente modelo de entidades y relaciones:
+
+```mermaid
+erDiagram
+    CUSTOMER ||--o{ ACCOUNT : "posee (1:N)"
+    ACCOUNT ||--o{ TRANSACTION : "registra (1:N)"
+    ACCOUNT ||--o{ TRANSFER : "origina (1:N)"
+    ACCOUNT ||--o{ TRANSFER : "recibe (opcional)"
+
+    CUSTOMER {
+        uuid id PK
+        string email UK
+        string dni UK
+        string first_name
+        string last_name
+        enum status
+    }
+
+    ACCOUNT {
+        uuid id PK
+        string account_number UK
+        uuid customer_id FK
+        enum account_type
+        decimal balance
+        enum status
+    }
+
+    TRANSACTION {
+        uuid id PK
+        uuid account_id FK
+        enum type
+        decimal amount
+        decimal balance_after
+        string reference_number
+        enum status
+        timestamp created_at
+    }
+
+    TRANSFER {
+        uuid id PK
+        uuid source_account_id FK
+        uuid destination_account_id FK
+        string destination_account_number
+        decimal amount
+        decimal fee
+        string reference_number
+        enum status
+    }
+```
+
+## 🚀 Estado del Proyecto (Sprints Sucesivos)
+
+El proyecto se desarrolla bajo metodología ágil a través de Historias de Usuario (HU). A continuación, el avance actual de las funcionalidades básicas y complejas:
+
+- [x] **HU-01** - Registro de Cliente
+- [x] **HU-02** - Autenticación (Login / JWT)
+- [x] **HU-03** - Perfil de Cliente
+- [x] **HU-04** - Validar existencia y estado de cliente (comunicación interna)
+- [x] **HU-05** - Crear cuenta bancaria
+- [x] **HU-06** - Listar cuentas asociadas al cliente
+- [x] **HU-07** - Consultar detalle de una cuenta específica
+- [x] **HU-08** - Depósito en cuenta local
+- [x] **HU-09** - Retiro de cuenta local
+- [x] **HU-10** - Transferencia entre cuentas propias / terceros
+- [x] **HU-11** - Consultar historial completo de transacciones
+- [x] **HU-12** - Resiliencia y Manejo de errores entre microservicios (Circuit Breaker)
+
+## 📂 Estructura del Código Fuente
+
+El repositorio está organizado como un proyecto multi-módulo de Maven para modularizar y desacoplar responsabilidades correctamente:
 
 ```text
 bank-management-system/
-├── ms-customers/      # Microservicio de Clientes y Seguridad (Puerto 8081)
+├── ms-customers/            # Gestión de Clientes, Usuarios, Roles y Token (JWT)
 │   └── src/main/java/com/codebytes5/banking/customers/
 │      ├── config/
 │      ├── controller/
@@ -43,7 +147,7 @@ bank-management-system/
 │      ├── repository/
 │      ├── security/
 │      └── service/
-├── ms-accounts/       # Microservicio de Cuentas y Transacciones (Puerto 8082)
+├── ms-accounts/             # Lógica de Negocio Central de Banca
 │   └── src/main/java/com/codebytes5/banking/accounts/
 │      ├── client/
 │      ├── config/
@@ -55,11 +159,20 @@ bank-management-system/
 │      ├── model/
 │      ├── repository/
 │      └── service/
-├── docker-compose.yml # Orquestación de bases de datos
-└── BankSystem.postman_collection.json # Pruebas de API
+├── docker-compose.yml       # Orquestador local de BDD (Postgres) y herramientas (Adminer, Dozzle)
+├── init-user-db.sh          # Scripts iniciales de Base de Datos
+└── BankSystem.postman_collection.json # Suite de Pruebas de API Completa
 ```
 
-## 🛠 Tecnologías Utilizadas
+## 🛠 Entorno y Stack Tecnológico
+
+![Java](https://img.shields.io/badge/Java%2017-ED8B00?style=flat-square&logo=java&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot%203.5.10-6DB33F?style=flat-square&logo=spring&logoColor=white)
+![Spring Security](https://img.shields.io/badge/Spring_Security-6DB33F?style=flat-square&logo=spring-security&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=flat-square&logo=docker&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/postgresql-4169e1?style=flat-square&logo=postgresql&logoColor=white)
+![Apache Maven](https://img.shields.io/badge/Apache%20Maven-C71A36?style=flat-square&logo=Apache%20Maven&logoColor=white)
+
 - **Lenguaje**: Java 17
 - **Framework**: Spring Boot 3.5.10
 - **Seguridad**: Spring Security + BCrypt
@@ -67,133 +180,101 @@ bank-management-system/
 - **Documentación**: OpenAPI 3.0 (Swagger UI)
 - **Herramientas**: Docker, Maven, Lombok, MapStruct
 
-## 🏁 Cómo Empezar
+---
 
-### 1. Requisitos previos
-- Docker y Docker Compose instalados.
-- Java 17+ instalado.
+## 🏁 Pasos Básicos Para Empezar (Getting Started)
 
-### 2. Iniciar Bases de Datos y Dozzle logs
+### 1. Requisitos Previos
 
-- crear el archivo .docker/.env.development
-- agregar lo siguiente para el usuario de postgres del contenedor docker
+Necesitarás las siguientes herramientas instaladas para poder contribuir y ejecutar el proyecto:
+- **[Java 17+](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)**
+- **[Docker](https://docs.docker.com/engine/install/)** y **Docker Compose**
+- **[Maven](https://maven.apache.org/)** (se incluye el wrapper `mvnw` en el root del proyecto)
 
-```
+### 2. Despliegue de Bases de Datos y Herramientas (Vía Docker)
+
+Antes de levantar los microservicios Java, asegúrate de levantar las BD. 
+Crea el archivo `.docker/.env.development` y configura las credenciales de PostgreSQL:
+
+```env
 POSTGRES_USER=admin
 POSTGRES_PASSWORD=admin
 ```
 
-- Desde la raíz del proyecto, ejecuta:
+Desde la raíz del proyecto, ejecuta el siguiente comando:
 
 ```bash
-docker compose up -d dozzle
-docker compose up -d db
+docker compose up -d db dozzle
 ```
 
-- abre tu navegado y accede a [http://localhost:9999](http://localhost:9999) para ver los logs en tiempo real de los contenedores
-- en el caso de usar la terminal de postgres desde el contenedor docker puedes usar lo siguiente:
+> 💡 **Nota:** <br>
+> - Visita [http://localhost:9999](http://localhost:9999) para acceder a **Dozzle**, lo que te permitirá inspeccionar los logs de tus contenedores Docker en tiempo real. <br>
+> - Puedes usar Adminer para manipular la BD visualmente: `docker compose up -d adminer` y entrar en [http://localhost:8080](http://localhost:8080).
 
+#### *(Opcional)* Conexión CLI a Postgres
 ```bash
 docker exec -it postgres-databases psql -U admin
 ```
 
-- opcional levantar el projecto adminer para revisar y administrar las bases de datos
+*(Opcional) Detención de los servicios: `docker compose down -v` o `docker compose down`.*
 
-```bash
-docker compose up -d adminer
-```
+### 3. Ejecución de los Microservicios
 
-- abre tu navegado y accede a [http://localhost:8080](http://localhost:8080)
+Es necesario disponer de variables de entorno para la configuración de cada microservicio en la sub-carpeta correspondiente.
 
-### 3. Parar base de datos y volumenes
-
-- en el caso de volver a iniciar bases de datos desde cero ejecute el siguiente comando
-
-```bash
-docker compose down -v
-```
-
-- este comando bajara a todos los servicios y tambien eliminara los volumnes, si no quieres eliminar los volumnes ejecuta el siguiente comando:
-
-```bash
-docker compose down
-```
-
-### 4. Ejecutar ms-customers
-#### 4.1 Ejecutar con variables de entorno
-
-- Crear el archivo **ms-customers/.env**
-
-```
-# spring boot variables
+#### Configuración ms-customers/.env
+```properties
 CUSTOMERS_SERVER_PORT=8081
-
-# spring boot database variables
 POSTGRES_USER=admin
 POSTGRES_PASSWORD=admin
 POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
-POSTGRES_DB_CUSTOMERS=ms_customers_db
+POSTGRES_DB_CUSTOMERS=customers_db
 ```
 
-- Crear el archivo **ms-accounts/.env**
-
-```
-# spring boot variables
+#### Configuración ms-accounts/.env
+```properties
 ACCOUNTS_SERVER_PORT=8082
-FEIGN_CLIENT_HOSTNAME=http://ms-customers-dev:8081
-
-# spring boot database variables
 POSTGRES_USER=admin
 POSTGRES_PASSWORD=admin
 POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
-POSTGRES_DB_ACCOUNTS=ms_accounts_db
+POSTGRES_DB_ACCOUNTS=accounts_db
 ```
 
-#### 4.2 Ejecutar sin variables de entorno
-
-- ejecucion para windows
-
+#### Correr Localmente Cada Servicio Individual (usando Maven)
+En terminales separadas, corre:
 ```bash
+# Windows
 ./mvnw -pl ms-customers spring-boot:run
-```
+./mvnw -pl ms-accounts spring-boot:run
 
-- ejecucion para linux
-
-```bash
+# Linux / Mac OS
 mvn -pl ms-customers spring-boot:run
+mvn -pl ms-accounts spring-boot:run
 ```
 
-#### 4.3 Compilacion y limpieza de dependencias
+---
 
-- resolucion de solo dependencias
-```
-mvn -pl ms-customers dependency:resolve
-```
+### Guía de Uso Rápido en Postman:
+1. Importa `BankSystem.postman_collection.json`.
+2. Ejecuta dentro del Fólder Auth → **Register Customer**.
+3. Ejecuta **Login Customer**. (Postman interceptará el token JWT y lo dejará disponible globalmente para las siguientes llamadas).
+4. Ejecuta el End-Point de creación y consulta de Cuentas usando el Fólder de Accounts.
+5. Usa los End-Points de Depósito y Retiro (`deposit`/`withdraw`) pasando la información requerida.
 
-- limpieza y compilacion
-```
-mvn -pl ms-customers clean compile
-```
 
-- habilitar logs modo=TRACE spring boot
-```
-mvn -pl ms-customers -Dspring-boot.run.arguments="--logging.level.root=TRACE"
-```
+## 📖 Documentación de API (OpenAPI 3)
 
-## 🧪 Pruebas
-Puedes probar todo el escenario de uso utilizando la colección de Postman incluida. El flujo recomendado es el siguiente:
-1. Importa `BankSystem.postman_collection.json` en Postman.
-2. Expande la carpeta **Auth** y ejecuta la petición **Register Customer**.
-3. Ejecuta la petición **Login Customer**. (Esto auto-guardará tu token JWT local para futuras peticiones).
-4. Ejecuta la petición **Get My Profile** en la carpeta **Customers** para validar tus datos.
-5. Expande la carpeta **Accounts** y ejecuta **Create Account** (Esto auto-guardará el ID de cuenta generado para futuras peticiones).
-6. Ejecuta **Get My Accounts** o **Get Account By ID** para ver reflejada la cuenta en el sistema.
-7. Ejecuta la petición **Deposit Account** para sumar saldo al balance de tu cuenta. *(Próximamente: Withdraw)*
+Ambos microservicios generan documentación viva e interactiva por medio de Swagger-UI. 
 
-## 📖 Documentación de API (OpenAPI)
-Cada microservicio expone su propia documentación interactiva mediante Swagger UI, lista para probar sin herramientas externas (sólo copiando el token `Bearer`).
+No es necesario usar herramientas de terceros para ver los contratos de red de REST; basta con acceder desde el navegador local e introducir el token devuelto por el *Login* dentro del formulario `Authorize`.
 
-- **ms-customers**: [http://localhost:8081/swagger-ui/index.html](http://localhost:8081/swagger-ui/index.html)
-- **ms-accounts**: [http://localhost:8082/swagger-ui/index.html](http://localhost:8082/swagger-ui/index.html)
+- **Swagger de ms-customers**: [http://localhost:8081/swagger-ui/index.html](http://localhost:8081/swagger-ui/index.html)
+- **Swagger de ms-accounts**: [http://localhost:8082/swagger-ui/index.html](http://localhost:8082/swagger-ui/index.html)
+
+---
+
+> Sistema de Gestión Bancaria - Arquitectura de Microservicios
+
+> Equipo 05 - CodeBytes.

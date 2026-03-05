@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+import com.codebytes5.banking.customers.dto.UpdateCustomerRequest;
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 @RequiredArgsConstructor
 public class CustomerService {
@@ -62,5 +65,27 @@ public class CustomerService {
                 Customer customer = customerRepository.findById(id)
                                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + id));
                 return customerMapper.toResponse(customer);
+        }
+
+        /**
+         * Actualiza el perfil del cliente autenticado.
+         * 
+         * @param email   Email del cliente autenticado.
+         * @param request Datos actualizados.
+         * @return CustomerResponse con la información actualizada.
+         */
+        @Transactional
+        public CustomerResponse updateProfile(String email, UpdateCustomerRequest request) {
+                Customer customer = customerRepository.findByEmail(email)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Customer not found with email: " + email));
+
+                customer.setFirstName(request.getFirstName());
+                customer.setLastName(request.getLastName());
+                customer.setPhone(request.getPhone());
+                customer.setAddress(request.getAddress());
+
+                Customer updatedCustomer = customerRepository.save(customer);
+                return customerMapper.toResponse(updatedCustomer);
         }
 }

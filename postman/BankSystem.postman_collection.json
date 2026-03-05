@@ -1,13 +1,13 @@
 {
     "info": {
         "_postman_id": "a1b2c3d4-e5f6-4a7b-8c9d-0123456789ab",
-        "name": "BankSystem API",
-        "description": "Colección para el Sistema de Gestión Bancaria",
+        "name": "BankCore API",
+        "description": "Colección de pruebas para Sistema de Gestión Bancaria (BankCore)",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "item": [
         {
-            "name": "Auth",
+            "name": "1. Auth",
             "item": [
                 {
                     "name": "Register Customer",
@@ -89,7 +89,7 @@
             ]
         },
         {
-            "name": "Customers",
+            "name": "2. Customers",
             "item": [
                 {
                     "name": "Get My Profile",
@@ -118,17 +118,25 @@
                     "response": []
                 },
                 {
-                    "name": "Get Customer By ID (Internal/Admin)",
+                    "name": "Update My Profile",
                     "request": {
-                        "method": "GET",
+                        "method": "PUT",
                         "header": [
                             {
                                 "key": "Authorization",
                                 "value": "Bearer {{jwtToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
                             }
                         ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"firstName\": \"Carlos Miguel\",\n    \"lastName\": \"García López\",\n    \"phone\": \"+34687654321\",\n    \"address\": \"Avenida Principal 456, Barcelona\"\n}"
+                        },
                         "url": {
-                            "raw": "http://localhost:8081/api/customers/{{customerId}}",
+                            "raw": "http://localhost:8081/api/customers/me",
                             "protocol": "http",
                             "host": [
                                 "localhost"
@@ -137,34 +145,7 @@
                             "path": [
                                 "api",
                                 "customers",
-                                "{{customerId}}"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Validate Customer (Internal)",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{jwtToken}}"
-                            }
-                        ],
-                        "url": {
-                            "raw": "http://localhost:8081/api/customers/{{customerId}}/validate",
-                            "protocol": "http",
-                            "host": [
-                                "localhost"
-                            ],
-                            "port": "8081",
-                            "path": [
-                                "api",
-                                "customers",
-                                "{{customerId}}",
-                                "validate"
+                                "me"
                             ]
                         }
                     },
@@ -173,7 +154,7 @@
             ]
         },
         {
-            "name": "Accounts",
+            "name": "3. Accounts",
             "item": [
                 {
                     "name": "Create Account",
@@ -185,6 +166,9 @@
                                     "var jsonData = pm.response.json();",
                                     "if (jsonData.id) {",
                                     "    pm.collectionVariables.set(\"accountId\", jsonData.id);",
+                                    "}",
+                                    "if (jsonData.accountNumber) {",
+                                    "    pm.collectionVariables.set(\"accountNumber\", jsonData.accountNumber);",
                                     "}"
                                 ],
                                 "type": "text/javascript"
@@ -233,7 +217,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "http://localhost:8082/api/accounts/my-accounts",
+                            "raw": "http://localhost:8082/api/accounts",
                             "protocol": "http",
                             "host": [
                                 "localhost"
@@ -241,8 +225,7 @@
                             "port": "8082",
                             "path": [
                                 "api",
-                                "accounts",
-                                "my-accounts"
+                                "accounts"
                             ]
                         }
                     },
@@ -275,7 +258,7 @@
                     "response": []
                 },
                 {
-                    "name": "Deposit Account",
+                    "name": "Deposit Money",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -290,7 +273,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"amount\": 500.50,\n    \"description\": \"Depósito de prueba mensual\"\n}"
+                            "raw": "{\n    \"amount\": 1000.00,\n    \"description\": \"Ingreso inicial\"\n}"
                         },
                         "url": {
                             "raw": "http://localhost:8082/api/accounts/{{accountId}}/deposit",
@@ -310,7 +293,7 @@
                     "response": []
                 },
                 {
-                    "name": "Withdraw Account",
+                    "name": "Withdraw Money",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -325,7 +308,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"amount\": 150.00,\n    \"description\": \"Retiro en cajero automático\"\n}"
+                            "raw": "{\n    \"amount\": 150.00,\n    \"description\": \"Retiro cajero\"\n}"
                         },
                         "url": {
                             "raw": "http://localhost:8082/api/accounts/{{accountId}}/withdraw",
@@ -339,6 +322,85 @@
                                 "accounts",
                                 "{{accountId}}",
                                 "withdraw"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Transactions History",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{jwtToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "http://localhost:8082/api/accounts/{{accountId}}/transactions?page=0&size=10&sortDirection=DESC",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "8082",
+                            "path": [
+                                "api",
+                                "accounts",
+                                "{{accountId}}",
+                                "transactions"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "0"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "10"
+                                },
+                                {
+                                    "key": "sortDirection",
+                                    "value": "DESC"
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "4. Transfers",
+            "item": [
+                {
+                    "name": "Execute Transfer",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{jwtToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"sourceAccountId\": \"{{accountId}}\",\n    \"destinationAccountNumber\": \"{{targetAccountNumber}}\",\n    \"amount\": 100.00,\n    \"concept\": \"Pago compartido cena\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8082/api/transfers",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "8082",
+                            "path": [
+                                "api",
+                                "transfers"
                             ]
                         }
                     },
@@ -359,6 +421,15 @@
         {
             "key": "accountId",
             "value": ""
+        },
+        {
+            "key": "accountNumber",
+            "value": ""
+        },
+        {
+            "key": "targetAccountNumber",
+            "value": "ES00000000000000000000",
+            "description": "Cambiar por un IBAN real generado en el sistema"
         }
     ]
 }

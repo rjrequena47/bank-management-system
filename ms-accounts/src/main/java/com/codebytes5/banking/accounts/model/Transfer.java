@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 /**
@@ -41,12 +42,18 @@ public class Transfer {
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
 
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal fee;
+
     @Column(length = 255)
     private String concept;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private TransferStatus status;
+
+    @Column(name = "scheduled_date")
+    private LocalDate scheduledDate;
 
     /** Identificador externo único de la transferencia (TRF-XXXXXXXX). */
     @Column(name = "reference_number", nullable = false, unique = true, length = 50)

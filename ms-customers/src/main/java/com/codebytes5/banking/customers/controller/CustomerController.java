@@ -20,6 +20,11 @@ import com.codebytes5.banking.customers.exception.UnauthorizedAccessException;
 
 import java.util.UUID;
 
+import com.codebytes5.banking.customers.dto.UpdateCustomerRequest;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 @RestController
 @RequestMapping("/api/customers")
 @RequiredArgsConstructor
@@ -36,6 +41,18 @@ public class CustomerController {
     @GetMapping("/me")
     public ResponseEntity<CustomerResponse> getMyProfile(@AuthenticationPrincipal String email) {
         CustomerResponse response = customerService.getProfile(email);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Endpoint para actualizar el perfil del cliente autenticado.
+     */
+    @Operation(summary = "Actualizar perfil del cliente", description = "Actualiza el perfil del cliente autenticado (nombre, apellidos, teléfono, dirección).", security = @SecurityRequirement(name = "bearerAuth"))
+    @PutMapping("/me")
+    public ResponseEntity<CustomerResponse> updateProfile(
+            @AuthenticationPrincipal String email,
+            @Valid @RequestBody UpdateCustomerRequest request) {
+        CustomerResponse response = customerService.updateProfile(email, request);
         return ResponseEntity.ok(response);
     }
 

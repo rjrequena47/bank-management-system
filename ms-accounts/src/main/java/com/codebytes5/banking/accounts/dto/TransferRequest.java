@@ -1,5 +1,6 @@
 package com.codebytes5.banking.accounts.dto;
 
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -23,6 +24,7 @@ public class TransferRequest {
 
     @NotNull(message = "Amount is required")
     @DecimalMin(value = "0.01", message = "Amount must be greater than zero")
+    @DecimalMax(value = "10000.00", message = "Maximum transfer amount is 10,000.00")
     private BigDecimal amount;
 
     @NotBlank(message = "Concept is required")

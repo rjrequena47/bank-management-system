@@ -51,191 +51,194 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TransferService {
 
-    private final AccountRepository accountRepository;
-    private final TransactionRepository transactionRepository;
-    private final TransferRepository transferRepository;
-    private final CustomerClient customerClient;
+        private final AccountRepository accountRepository;
+        private final TransactionRepository transactionRepository;
+        private final TransferRepository transferRepository;
+        private final CustomerClient customerClient;
 
-    @Transactional
-    public TransferResponse executeTransfer(UUID customerId, TransferRequest request) {
-        log.info("[TransferService] Iniciando transferencia. originAccountId={}, customerId={}",
-                request.getSourceAccountId(), customerId);
+        @Transactional
+        public TransferResponse executeTransfer(UUID customerId, TransferRequest request) {
+                log.info("[TransferService] Iniciando transferencia. originAccountId={}, customerId={}",
+                                request.getSourceAccountId(), customerId);
 
-        // 1. Validate source account ownership
-        Account sourceAccount = accountRepository.findById(request.getSourceAccountId())
-                .orElseThrow(() -> {
-                    log.warn("[TransferService] Cuenta origen no encontrada. accountId={}",
-                            request.getSourceAccountId());
-                    return new AccountNotFoundException(
-                            "Cuenta origen no encontrada: " + request.getSourceAccountId());
-                });
+                // 1. Validate source account ownership
+                Account sourceAccount = accountRepository.findById(request.getSourceAccountId())
+                                .orElseThrow(() -> {
+                                        log.warn("[TransferService] Cuenta origen no encontrada. accountId={}",
+                                                        request.getSourceAccountId());
+                                        return new AccountNotFoundException(
+                                                        "Cuenta origen no encontrada: " + request.getSourceAccountId());
+                                });
 
-        if (!sourceAccount.getCustomerId().equals(customerId)) {
-            log.warn(
-                    "[TransferService] Transferencia denegada: origen no pertenece al cliente. accountId={}, customerId={}",
-                    request.getSourceAccountId(), customerId);
-            throw new UnauthorizedAccountAccessException(
-                    "La cuenta origen no pertenece al cliente autenticado");
+                if (!sourceAccount.getCustomerId().equals(customerId)) {
+                        log.warn(
+                                        "[TransferService] Transferencia denegada: origen no pertenece al cliente. accountId={}, customerId={}",
+                                        request.getSourceAccountId(), customerId);
+                        throw new UnauthorizedAccountAccessException(
+                                        "La cuenta origen no pertenece al cliente autenticado");
+                }
+
+                // 2. Validate source account is ACTIVE
+                if (sourceAccount.getStatus() != AccountStatus.ACTIVE) {
+                        log.warn("[TransferService] Transferencia denegada: cuenta origen inactiva. accountId={}, status={}",
+                                        sourceAccount.getId(), sourceAccount.getStatus());
+                        throw new InvalidTransactionException(
+                                        "La cuenta origen debe estar activa para realizar una transferencia");
+                }
+
+                // 3. Validate customer is ACTIVE via ms-customers
+                CustomerValidationResponse validation = customerClient.validateCustomer(customerId);
+                if (!validation.isExists()) {
+                        log.warn("[TransferService] Cliente no encontrado en ms-customers. customerId={}", customerId);
+                        throw new CustomerNotFoundException(customerId);
+                }
+                if (!validation.isActive()) {
+                        log.warn("[TransferService] Cliente inactivo en ms-customers. customerId={}", customerId);
+                        throw new CustomerNotActiveException(customerId);
+                }
+
+                // 4. Validate amount > 0 (also enforced by @DecimalMin in DTO, but
+                // double-check)
+                if (request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                        log.warn("[TransferService] Transferencia denegada: monto inválido. accountId={}",
+                                        sourceAccount.getId());
+                        throw new InvalidTransactionException(
+                                        "El monto de la transferencia debe ser mayor a cero");
+                }
+
+                // 5. Validate sufficient balance
+                if (sourceAccount.getBalance().compareTo(request.getAmount()) < 0) {
+                        log.warn("[TransferService] Transferencia denegada: fondos insuficientes. accountId={}",
+                                        sourceAccount.getId());
+                        throw new InsufficientBalanceException(
+                                        "Saldo insuficiente para realizar la transferencia. Saldo disponible: "
+                                                        + sourceAccount.getBalance());
+                }
+
+                // 6. Resolve destination account (internal or external)
+                Optional<Account> destinationAccountOpt = accountRepository
+                                .findByAccountNumber(request.getDestinationAccountNumber());
+
+                // 7. Resolve beneficiary name (graceful degradation on Feign errors)
+                String beneficiaryName = null;
+                UUID destinationAccountId = null;
+
+                if (destinationAccountOpt.isPresent()) {
+                        log.info("[TransferService] Transferencia interna. destinationAccountNumber={}",
+                                        request.getDestinationAccountNumber());
+                        Account destinationAccount = destinationAccountOpt.get();
+                        destinationAccountId = destinationAccount.getId();
+                        beneficiaryName = resolveBeneficiaryName(destinationAccount.getCustomerId());
+                } else {
+                        log.info("[TransferService] Transferencia externa. destinationAccountNumber={}",
+                                        request.getDestinationAccountNumber());
+                }
+
+                // 8. Generate unique transfer reference
+                String referenceNumber = "TRF-" + UUID.randomUUID().toString()
+                                .replace("-", "").substring(0, 8).toUpperCase();
+
+                // 9. Debit source account
+                BigDecimal sourceBalanceBefore = sourceAccount.getBalance();
+                sourceAccount.setBalance(sourceBalanceBefore.subtract(request.getAmount()));
+                accountRepository.save(sourceAccount);
+
+                Transaction debitTransaction = Transaction.builder()
+                                .accountId(sourceAccount.getId())
+                                .type(TransactionType.TRANSFER_OUT)
+                                .amount(request.getAmount())
+                                .balanceAfter(sourceAccount.getBalance())
+                                .concept(request.getConcept())
+                                .counterpartyAccountNumber(request.getDestinationAccountNumber())
+                                .counterpartyName(beneficiaryName)
+                                .referenceNumber(referenceNumber)
+                                .status(TransactionStatus.COMPLETED)
+                                .build();
+
+                Transaction savedDebit = transactionRepository.save(debitTransaction);
+
+                // 10. Credit destination account (if internal)
+                Transaction savedCredit = null;
+                if (destinationAccountOpt.isPresent()) {
+                        Account destinationAccount = destinationAccountOpt.get();
+
+                        if (destinationAccount.getStatus() != AccountStatus.ACTIVE) {
+                                log.warn("[TransferService] Transferencia interna fallida: cuenta destino inactiva. accountId={}",
+                                                destinationAccount.getId());
+                                throw new InvalidTransactionException(
+                                                "La cuenta destino debe estar activa para recibir una transferencia");
+                        }
+
+                        destinationAccount.setBalance(destinationAccount.getBalance().add(request.getAmount()));
+                        accountRepository.save(destinationAccount);
+
+                        // Resolve sender name for credit transaction counterpartyName
+                        String senderName = resolveBeneficiaryName(sourceAccount.getCustomerId());
+
+                        Transaction creditTransaction = Transaction.builder()
+                                        .accountId(destinationAccount.getId())
+                                        .type(TransactionType.TRANSFER_IN)
+                                        .amount(request.getAmount())
+                                        .balanceAfter(destinationAccount.getBalance())
+                                        .concept(request.getConcept())
+                                        .counterpartyAccountNumber(sourceAccount.getAccountNumber())
+                                        .counterpartyName(senderName)
+                                        .referenceNumber(referenceNumber)
+                                        .status(TransactionStatus.COMPLETED)
+                                        .build();
+
+                        savedCredit = transactionRepository.save(creditTransaction);
+                }
+
+                // 11. Persist Transfer record
+                Transfer transfer = Transfer.builder()
+                                .sourceAccountId(sourceAccount.getId())
+                                .destinationAccountId(destinationAccountId)
+                                .destinationAccountNumber(request.getDestinationAccountNumber())
+                                .amount(request.getAmount())
+                                .fee(BigDecimal.ZERO) // Por ahora comisión cero
+                                .concept(request.getConcept())
+                                .status(TransferStatus.COMPLETED)
+                                .referenceNumber(referenceNumber)
+                                .debitTransactionId(savedDebit.getId())
+                                .creditTransactionId(savedCredit != null ? savedCredit.getId() : null)
+                                .build();
+
+                Transfer savedTransfer = transferRepository.save(transfer);
+
+                log.info("[TransferService] Transferencia procesada exitosamente. referenceNumber={}, transferId={}",
+                                referenceNumber, savedTransfer.getId());
+
+                // 12. Return response
+                return TransferResponse.builder()
+                                .transferId(savedTransfer.getId())
+                                .referenceNumber(referenceNumber)
+                                .sourceAccountNumber(sourceAccount.getAccountNumber())
+                                .destinationAccountNumber(request.getDestinationAccountNumber())
+                                .beneficiaryName(beneficiaryName)
+                                .amount(request.getAmount())
+                                .fee(BigDecimal.ZERO)
+                                .concept(request.getConcept())
+                                .status(TransferStatus.COMPLETED)
+                                .createdAt(savedTransfer.getCreatedAt())
+                                .build();
         }
 
-        // 2. Validate source account is ACTIVE
-        if (sourceAccount.getStatus() != AccountStatus.ACTIVE) {
-            log.warn("[TransferService] Transferencia denegada: cuenta origen inactiva. accountId={}, status={}",
-                    sourceAccount.getId(), sourceAccount.getStatus());
-            throw new InvalidTransactionException(
-                    "La cuenta origen debe estar activa para realizar una transferencia");
+        /**
+         * Resuelve el nombre completo de un cliente llamando a ms-customers.
+         * Devuelve null si el servicio no está disponible o el cliente no existe.
+         */
+        private String resolveBeneficiaryName(UUID targetCustomerId) {
+                try {
+                        CustomerInfoResponse info = customerClient.getCustomerById(targetCustomerId);
+                        if (info != null) {
+                                return info.getFullName() != null
+                                                ? info.getFullName()
+                                                : (info.getFirstName() + " " + info.getLastName()).trim();
+                        }
+                } catch (Exception e) {
+                        log.warn("No se pudo resolver el nombre del cliente {}: {}", targetCustomerId, e.getMessage());
+                }
+                return null;
         }
-
-        // 3. Validate customer is ACTIVE via ms-customers
-        CustomerValidationResponse validation = customerClient.validateCustomer(customerId);
-        if (!validation.isExists()) {
-            log.warn("[TransferService] Cliente no encontrado en ms-customers. customerId={}", customerId);
-            throw new CustomerNotFoundException(customerId);
-        }
-        if (!validation.isActive()) {
-            log.warn("[TransferService] Cliente inactivo en ms-customers. customerId={}", customerId);
-            throw new CustomerNotActiveException(customerId);
-        }
-
-        // 4. Validate amount > 0 (also enforced by @DecimalMin in DTO, but
-        // double-check)
-        if (request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            log.warn("[TransferService] Transferencia denegada: monto inválido. accountId={}", sourceAccount.getId());
-            throw new InvalidTransactionException(
-                    "El monto de la transferencia debe ser mayor a cero");
-        }
-
-        // 5. Validate sufficient balance
-        if (sourceAccount.getBalance().compareTo(request.getAmount()) < 0) {
-            log.warn("[TransferService] Transferencia denegada: fondos insuficientes. accountId={}",
-                    sourceAccount.getId());
-            throw new InsufficientBalanceException(
-                    "Saldo insuficiente para realizar la transferencia. Saldo disponible: "
-                            + sourceAccount.getBalance());
-        }
-
-        // 6. Resolve destination account (internal or external)
-        Optional<Account> destinationAccountOpt = accountRepository
-                .findByAccountNumber(request.getDestinationAccountNumber());
-
-        // 7. Resolve beneficiary name (graceful degradation on Feign errors)
-        String beneficiaryName = null;
-        UUID destinationAccountId = null;
-
-        if (destinationAccountOpt.isPresent()) {
-            log.info("[TransferService] Transferencia interna. destinationAccountNumber={}",
-                    request.getDestinationAccountNumber());
-            Account destinationAccount = destinationAccountOpt.get();
-            destinationAccountId = destinationAccount.getId();
-            beneficiaryName = resolveBeneficiaryName(destinationAccount.getCustomerId());
-        } else {
-            log.info("[TransferService] Transferencia externa. destinationAccountNumber={}",
-                    request.getDestinationAccountNumber());
-        }
-
-        // 8. Generate unique transfer reference
-        String referenceNumber = "TRF-" + UUID.randomUUID().toString()
-                .replace("-", "").substring(0, 8).toUpperCase();
-
-        // 9. Debit source account
-        BigDecimal sourceBalanceBefore = sourceAccount.getBalance();
-        sourceAccount.setBalance(sourceBalanceBefore.subtract(request.getAmount()));
-        accountRepository.save(sourceAccount);
-
-        Transaction debitTransaction = Transaction.builder()
-                .accountId(sourceAccount.getId())
-                .type(TransactionType.TRANSFER_OUT)
-                .amount(request.getAmount())
-                .balanceAfter(sourceAccount.getBalance())
-                .concept(request.getConcept())
-                .counterpartyAccountNumber(request.getDestinationAccountNumber())
-                .counterpartyName(beneficiaryName)
-                .referenceNumber(referenceNumber)
-                .status(TransactionStatus.COMPLETED)
-                .build();
-
-        Transaction savedDebit = transactionRepository.save(debitTransaction);
-
-        // 10. Credit destination account (if internal)
-        Transaction savedCredit = null;
-        if (destinationAccountOpt.isPresent()) {
-            Account destinationAccount = destinationAccountOpt.get();
-
-            if (destinationAccount.getStatus() != AccountStatus.ACTIVE) {
-                log.warn("[TransferService] Transferencia interna fallida: cuenta destino inactiva. accountId={}",
-                        destinationAccount.getId());
-                throw new InvalidTransactionException(
-                        "La cuenta destino debe estar activa para recibir una transferencia");
-            }
-
-            destinationAccount.setBalance(destinationAccount.getBalance().add(request.getAmount()));
-            accountRepository.save(destinationAccount);
-
-            // Resolve sender name for credit transaction counterpartyName
-            String senderName = resolveBeneficiaryName(sourceAccount.getCustomerId());
-
-            Transaction creditTransaction = Transaction.builder()
-                    .accountId(destinationAccount.getId())
-                    .type(TransactionType.TRANSFER_IN)
-                    .amount(request.getAmount())
-                    .balanceAfter(destinationAccount.getBalance())
-                    .concept(request.getConcept())
-                    .counterpartyAccountNumber(sourceAccount.getAccountNumber())
-                    .counterpartyName(senderName)
-                    .referenceNumber(referenceNumber)
-                    .status(TransactionStatus.COMPLETED)
-                    .build();
-
-            savedCredit = transactionRepository.save(creditTransaction);
-        }
-
-        // 11. Persist Transfer record
-        Transfer transfer = Transfer.builder()
-                .sourceAccountId(sourceAccount.getId())
-                .destinationAccountId(destinationAccountId)
-                .destinationAccountNumber(request.getDestinationAccountNumber())
-                .amount(request.getAmount())
-                .concept(request.getConcept())
-                .status(TransferStatus.COMPLETED)
-                .referenceNumber(referenceNumber)
-                .debitTransactionId(savedDebit.getId())
-                .creditTransactionId(savedCredit != null ? savedCredit.getId() : null)
-                .build();
-
-        Transfer savedTransfer = transferRepository.save(transfer);
-
-        log.info("[TransferService] Transferencia procesada exitosamente. referenceNumber={}, transferId={}",
-                referenceNumber, savedTransfer.getId());
-
-        // 12. Return response
-        return TransferResponse.builder()
-                .transferId(savedTransfer.getId())
-                .referenceNumber(referenceNumber)
-                .sourceAccountNumber(sourceAccount.getAccountNumber())
-                .destinationAccountNumber(request.getDestinationAccountNumber())
-                .beneficiaryName(beneficiaryName)
-                .amount(request.getAmount())
-                .concept(request.getConcept())
-                .status(TransferStatus.COMPLETED)
-                .createdAt(savedTransfer.getCreatedAt())
-                .build();
-    }
-
-    /**
-     * Resuelve el nombre completo de un cliente llamando a ms-customers.
-     * Devuelve null si el servicio no está disponible o el cliente no existe.
-     */
-    private String resolveBeneficiaryName(UUID targetCustomerId) {
-        try {
-            CustomerInfoResponse info = customerClient.getCustomerById(targetCustomerId);
-            if (info != null) {
-                return info.getFullName() != null
-                        ? info.getFullName()
-                        : (info.getFirstName() + " " + info.getLastName()).trim();
-            }
-        } catch (Exception e) {
-            log.warn("No se pudo resolver el nombre del cliente {}: {}", targetCustomerId, e.getMessage());
-        }
-        return null;
-    }
 }

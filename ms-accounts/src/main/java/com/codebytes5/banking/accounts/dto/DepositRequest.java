@@ -7,7 +7,12 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class DepositRequest {
 
     @NotNull(message = "Amount is required")
